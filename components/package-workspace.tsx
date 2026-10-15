@@ -1,7 +1,7 @@
 'use client'
 
 import { useMemo, useState } from 'react'
-import { ChevronDown, ChevronLeft, ChevronRight, Loader2, PackageCheck, Plus, Search, Send, Truck, KeyRound, X } from 'lucide-react'
+import { ChevronDown, ChevronLeft, ChevronRight, Loader2, PackageCheck, Plus, Search, Send, Truck, KeyRound, X, XCircle } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -306,6 +306,26 @@ export function PackageWorkspace() {
                       className="flex items-center gap-1.5 rounded-lg border border-border bg-muted/40 px-2.5 py-1 text-[10px] font-medium text-muted-foreground transition-colors hover:bg-muted"
                     >
                       <Truck className="size-3" /> Transfer to driver
+                    </button>
+                  )}
+                  {item.openTransfer && (item.openTransfer.creatorId === meId || item.isMine) && (
+                    <button
+                      type="button"
+                      disabled={busy}
+                      onClick={async (event) => {
+                        event.stopPropagation()
+                        if (item.openTransfer) {
+                          setBusy(true)
+                          try {
+                            await workspace.cancelTransfer(item.openTransfer.id)
+                          } finally {
+                            setBusy(false)
+                          }
+                        }
+                      }}
+                      className="flex items-center gap-1.5 rounded-lg border border-red-200 bg-red-50 px-2.5 py-1 text-[10px] font-medium text-red-700 transition-colors hover:bg-red-100 disabled:opacity-50"
+                    >
+                      <XCircle className="size-3" /> Recall transfer offer
                     </button>
                   )}
                   {officeDeliver(item) && (

@@ -489,6 +489,7 @@ export function acceptTransfer(token: string, transferId: string, transferCode?:
 }
 
 export interface CreatePackageInput {
+  idempotencyKey?: string | null
   deliveryType: 'OPEN' | 'FIXED_ROUTE'
   sender?: { role: 'SENDER'; userId?: string | null; name?: string | null; phone?: string | null }
   receiver: { role: 'RECEIVER'; userId?: string | null; name?: string | null; phone?: string | null }
@@ -507,6 +508,10 @@ export interface CreatePackageInput {
 }
 
 export function createPackage(token: string, input: CreatePackageInput): Promise<{ createPackage: PackageCreation }> {
+  const payload = {
+    ...input,
+    idempotencyKey: input.idempotencyKey || (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : undefined),
+  }
   return gql<{ createPackage: PackageCreation }>(
     {
       query: `mutation CreatePackage($input: CreatePackageInput!) {
@@ -515,7 +520,7 @@ export function createPackage(token: string, input: CreatePackageInput): Promise
           transfer { ${TRANSFER_FIELDS} }
         }
       }`,
-      variables: { input },
+      variables: { input: payload },
       token,
     },
   )
@@ -587,13 +592,14 @@ export function initiateDelivery(token: string, packageId: string): Promise<{ in
   )
 }
 
-export function confirmDelivery(token: string, packageId: string, deliveryCode: string): Promise<{ confirmDelivery: DeliveryPackage }> {
+export function confirmDelivery(token: string, packageId: string, deliveryCode: string, idempotencyKey?: string): Promise<{ confirmDelivery: DeliveryPackage }> {
+  const key = idempotencyKey || (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : undefined)
   return gql<{ confirmDelivery: DeliveryPackage }>(
     {
       query: `mutation ConfirmDelivery($input: ConfirmDeliveryInput!) {
         confirmDelivery(input: $input) { id trackingCode status }
       }`,
-      variables: { input: { packageId, deliveryCode } },
+      variables: { input: { packageId, deliveryCode, idempotencyKey: key } },
       token,
     },
   )
@@ -633,11 +639,12 @@ export function cancelTransfer(token: string, transferId: string): Promise<{ can
   )
 }
 
-export function confirmTransfer(token: string, transferId: string): Promise<{ confirmTransfer: Transfer }> {
+export function confirmTransfer(token: string, transferId: string, idempotencyKey?: string): Promise<{ confirmTransfer: Transfer }> {
+  const key = idempotencyKey || (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : undefined)
   return gql<{ confirmTransfer: Transfer }>(
     {
-      query: `mutation ConfirmTransfer($transferId: ID!) { confirmTransfer(transferId: $transferId) { id status } }`,
-      variables: { transferId },
+      query: `mutation ConfirmTransfer($transferId: ID!, $idempotencyKey: String) { confirmTransfer(transferId: $transferId, idempotencyKey: $idempotencyKey) { id status } }`,
+      variables: { transferId, idempotencyKey: key },
       token,
     },
   )

@@ -11,8 +11,10 @@ import {
   Truck,
   UserRound,
   X,
+  XCircle,
 } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import { useAuth } from '@/lib/auth'
 import { useWorkspace } from '@/lib/store'
 import { fetchPackageById, toPackageItem } from '@/lib/api'
@@ -31,6 +33,7 @@ export function PackageDetail({ item, onClose }: { item: PackageItem | null; onC
   const { user, token } = useAuth()
   const workspace = useWorkspace()
   const [full, setFull] = useState<PackageItem | null>(null)
+  const [busyCancel, setBusyCancel] = useState(false)
 
   // List queries return a slim field set (no events/custody/media) to keep the
   // workspace fast. When the drawer opens, fetch the full package so the
@@ -140,6 +143,28 @@ export function PackageDetail({ item, onClose }: { item: PackageItem | null; onC
                   <KeyRound className="size-3.5" />
                   {workspace.getSecureCode(t.id) ? `Code: ${workspace.getSecureCode(t.id)}` : 'Regenerate the code to view it.'}
                 </p>
+              )}
+              {t.creatorId === meId && (t.status === 'PENDING' || t.status === 'REQUESTED') && (
+                <div className="mt-3 pt-2 border-t border-border">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    disabled={busyCancel}
+                    className="w-full gap-1.5 border-red-200 text-red-700 hover:bg-red-50 hover:text-red-800"
+                    onClick={async () => {
+                      setBusyCancel(true)
+                      try {
+                        await workspace.cancelTransfer(t.id)
+                        onClose()
+                      } finally {
+                        setBusyCancel(false)
+                      }
+                    }}
+                  >
+                    <XCircle className="size-3.5" />
+                    {busyCancel ? 'Cancelling...' : 'Cancel Transfer Offer (Recall)'}
+                  </Button>
+                </div>
               )}
             </div>
           )}
