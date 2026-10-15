@@ -90,10 +90,12 @@ export function PackageWorkspace() {
   const officeDeliver = (item: PackageItem) =>
     ['DESTINATION_OFFICE', 'READY_FOR_COLLECTION'].includes(item.status)
   const awaitingConfirm = (item: PackageItem) => item.status === 'PENDING_CONFIRMATION'
-  // Packages I hold that were created here (origin = this office) go out via a
+  // Packages I hold or held by this office (origin = this office) go out via a
   // driver — regardless of destination. Offer the handover until one is open.
   const canTransfer = (item: PackageItem) =>
-    item.isMine && ['CREATED', 'ORIGIN_OFFICE', 'ACCEPTED'].includes(item.status) && !item.openTransfer
+    (item.isMine || item.currentCustodian?.role === 'OFFICE' || item.currentCustodian?.role === 'WORKER') &&
+    ['CREATED', 'ORIGIN_OFFICE', 'ACCEPTED'].includes(item.status) &&
+    !item.openTransfer
 
   async function runQuickDeliver() {
     if (!deliverItem) return
@@ -274,7 +276,7 @@ export function PackageWorkspace() {
                   <Badge variant="outline" className={cn('text-[10px]', statusClass(item.status))}>
                     {statusLabel(item.status)}
                   </Badge>
-                  {item.openTransfer && item.isMine && (
+                  {item.openTransfer && (item.isMine || item.currentCustodian?.role === 'OFFICE' || item.currentCustodian?.role === 'WORKER') && (
                     <Badge variant="outline" className="border-violet-200 bg-violet-50 text-[9px] text-violet-700">
                       Awaiting driver
                     </Badge>
@@ -291,7 +293,7 @@ export function PackageWorkspace() {
                 <p className="mt-0.5 truncate text-[10px] text-muted-foreground">
                   {item.currentCustodian ? `${item.currentCustodian.name} (${item.currentCustodian.role})` : 'No custodian'}
                   {item.assignedDriver && item.currentCustodian?.role !== 'DRIVER' ? ` · Driver: ${item.assignedDriver}` : ''}
-                  {item.openTransfer && item.isMine ? ` · ${TRANSFER_RULE_LABEL[item.openTransfer.ruleType] ?? ''} transfer open — waiting for the driver to accept` : ''}
+                  {item.openTransfer && (item.isMine || item.currentCustodian?.role === 'OFFICE' || item.currentCustodian?.role === 'WORKER') ? ` · ${TRANSFER_RULE_LABEL[item.openTransfer.ruleType] ?? ''} transfer open — waiting for the driver to accept` : ''}
                 </p>
                 <div className="mt-2 flex flex-wrap items-center gap-2">
                   {canTransfer(item) && (

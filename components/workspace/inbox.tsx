@@ -236,7 +236,8 @@ export function CustodyInbox() {
                               </Button>
                             )}
                             {transfer.ruleType === 'CONFIRM' && (
-                              <Button size="sm" variant="outline" className="flex-1" disabled={busyId === transfer.id} onClick={() => void requestConfirm(transfer)}>
+                              <Button size="sm" variant="outline" className="flex-1 gap-1.5" disabled={busyId === transfer.id} onClick={() => void requestConfirm(transfer)}>
+                                {busyId === transfer.id && <Loader2 className="size-3.5 animate-spin" />}
                                 Request
                               </Button>
                             )}
@@ -304,10 +305,11 @@ export function CustodyInbox() {
                               <Button
                                 size="sm"
                                 variant="outline"
-                                className="flex-1"
+                                className="flex-1 gap-1.5"
                                 disabled={busyId === activeTransfer.id}
                                 onClick={() => void requestConfirm(activeTransfer)}
                               >
+                                {busyId === activeTransfer.id && <Loader2 className="size-3.5 animate-spin" />}
                                 Request
                               </Button>
                             )}

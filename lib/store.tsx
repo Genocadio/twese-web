@@ -428,6 +428,42 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
     }
   }, [status, token, loadWorkspace])
 
+  // GraphQL subscription — real-time transfer requests feed (e.g. driver transferring to office).
+  useEffect(() => {
+    if (status !== 'signedIn' || !token || typeof window === 'undefined') return
+    let stop = false
+    let unsubscribe = () => {}
+    let attempts = 0
+    const connect = () => {
+      if (stop) return
+      unsubscribe()
+      unsubscribe = subscribeGraphql<{ transferCreated: { transfer: { id: string; ruleType: string; acceptorType: string; status: string } } }>({
+        token,
+        query: `subscription TransferCreated {
+          transferCreated {
+            transfer { id ruleType acceptorType status }
+          }
+        }`,
+        onNext: () => {
+          toast.info('New transfer request received')
+          void loadWorkspace()
+        },
+        onError: () => {
+          if (stop) return
+          attempts += 1
+          if (attempts < 5) {
+            window.setTimeout(connect, Math.min(attempts * 4_000, 20_000))
+          }
+        },
+      })
+    }
+    connect()
+    return () => {
+      stop = true
+      unsubscribe()
+    }
+  }, [status, token, loadWorkspace])
+
   // GraphQL subscription — real-time notice feed via WebSocket (replaces Supabase Realtime).
   // New notices are pushed instantly; falls back to the 60s polling interval on failure.
   useEffect(() => {
@@ -541,32 +577,37 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
 
   const claimPackage = useCallback(
     async (packageId: string) => {
+      let resolvedTransferId: string | undefined
       await runMutation(async () => {
         // Accept an existing transfer offer on this package.
         // First try the local offers state (fast path); if the transfer is not
         // found (stale state), fall back to a fresh fetch from the backend.
-        let transferId: string | undefined = state.offers
+        resolvedTransferId = state.offers
           .find((o) => o.id === packageId)
-          ?.transfers.find((t) => t.status === 'PENDING' || t.status === 'REQUESTED')
+          ?.transfers.find((t) => t.status === 'PENDING')
           ?.id
 
-        if (!transferId) {
+        if (!resolvedTransferId) {
           // Stale or missing from local state — fetch the package directly
           const { package: pkg } = await api.fetchPackageById(token!, packageId)
-          transferId = pkg.transfers.find(
-            (t) => t.status === 'PENDING' || t.status === 'REQUESTED',
+          resolvedTransferId = pkg.transfers.find(
+            (t) => t.status === 'PENDING',
           )?.id
         }
 
-        if (!transferId) {
-          throw new Error('No active transfer found for this package')
+        if (!resolvedTransferId) {
+          throw new Error('No pending transfer found for this package')
         }
 
-        await api.acceptTransfer(token!, transferId)
+        await api.acceptTransfer(token!, resolvedTransferId)
       })
+      patch((prev) => ({
+        offers: prev.offers.filter((o) => o.id !== packageId),
+        pendingTransfers: resolvedTransferId ? prev.pendingTransfers.filter((t) => t.id !== resolvedTransferId) : prev.pendingTransfers,
+      }))
       toast.success('Transfer accepted — package added to your custody')
     },
-    [token, runMutation, state.offers],
+    [token, runMutation, patch, state.offers],
   )
 
   const createPackage = useCallback(
