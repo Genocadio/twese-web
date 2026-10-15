@@ -298,7 +298,7 @@ export function requestCompanyAccess(token: string, companyCode: string): Promis
     createdAt?: string | null
   }>('/main/company-access-requests', { token, method: 'POST', body: { companyCode } }).then((res) => {
     const mapped = toRequestStatus(res.data)
-    if (!mapped) throw new Error('The company access request was not accepted by CavGo.')
+    if (!mapped) throw new Error('The company access request was not accepted by Twese.')
     return mapped
   })
 }

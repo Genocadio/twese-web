@@ -5,8 +5,8 @@ import { isAuthError, isInfraError, setAuthErrorHandler, type AuthRefreshOutcome
 import { fetchProfile } from './api'
 import type { Role, User } from './types'
 
-const SESSION_KEY = 'cavgo.session'
-const USER_KEY = 'cavgo.user'
+const SESSION_KEY = 'twese.session'
+const USER_KEY = 'twese.user'
 
 /**
  * Roles that are NOT allowed in the worker portal. Staff/admins manage
@@ -87,7 +87,7 @@ const AuthContext = createContext<AuthContextValue | null>(null)
 function readStored(): string | null {
   if (typeof window === 'undefined') return null
   try {
-    return localStorage.getItem(SESSION_KEY)
+    return localStorage.getItem(SESSION_KEY) ?? localStorage.getItem('cavgo.session')
   } catch {
     return null
   }
@@ -258,7 +258,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           token,
           user: null,
           canRefresh: Boolean(parseSession()?.refresh),
-          error: error instanceof Error ? error.message : "We couldn't reach the CavGo service.",
+          error: error instanceof Error ? error.message : "We couldn't reach the Twese service.",
         }))
       } else {
         // Any other failure while establishing the session (e.g. a 4xx GraphQL

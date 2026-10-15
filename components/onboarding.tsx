@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import { useCallback, useRef, useState } from 'react'
 import {
   AlertCircle,
@@ -76,10 +77,8 @@ function OnboardingShell({
     <div className="grid min-h-screen place-items-center bg-background p-4">
       <div className="w-full max-w-md">
         <div className="mb-8 flex flex-col items-center text-center">
-          <span className="grid size-14 place-items-center rounded-2xl bg-[#f07c42] text-2xl font-black text-white shadow-lg shadow-orange-500/25">
-            C
-          </span>
-          <p className="mt-4 font-mono text-xl font-bold tracking-tight">CAVGO</p>
+          <Image src="/logo.png" width={72} height={72} alt="Twese" className="size-16 object-contain drop-shadow-md" priority />
+          <p className="mt-4 font-mono text-xl font-bold tracking-tight">TWESE</p>
           <p className="mt-1 text-xs uppercase tracking-[0.25em] text-muted-foreground">Worker console</p>
           {user && (
             <p className="mt-3 text-xs text-muted-foreground">
@@ -201,7 +200,7 @@ function JoinCompanyScreen({
               required
               value={code}
               onChange={(event) => setCode(event.target.value.toUpperCase())}
-              placeholder="e.g. CAVGO-001"
+              placeholder="e.g. TWESE-001"
               className="h-10 font-mono text-sm uppercase"
               autoFocus
               disabled={checking}

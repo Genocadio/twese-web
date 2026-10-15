@@ -38,12 +38,12 @@ export function initials(name: string | null | undefined): string {
 
 export function fullName(first: string | null | undefined, last: string | null | undefined): string {
   const name = [first, last].filter(Boolean).join(' ').trim()
-  return name || 'CavGo user'
+  return name || 'Twese user'
 }
 
 export function displayName(user: { firstName: string | null; lastName: string | null; email: string; username: string | null }): string {
   const name = fullName(user.firstName, user.lastName)
-  if (name !== 'CavGo user') return name
+  if (name !== 'Twese user') return name
   return user.email.split('@')[0] || user.username || user.email
 }
 

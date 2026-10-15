@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { useState } from 'react'
 import { Bell, CheckCheck, ChevronDown, Loader2, LogOut, RefreshCcw, WifiOff } from 'lucide-react'
 import { ToastContainer } from 'react-toastify'
@@ -25,7 +26,7 @@ export function WorkerShell({ children }: { children: React.ReactNode }) {
       <div className="grid min-h-screen place-items-center bg-background">
         <div className="flex flex-col items-center gap-3 text-muted-foreground">
           <Loader2 className="size-6 animate-spin" />
-          <p className="text-xs">Connecting to CavGo…</p>
+          <p className="text-xs">Connecting to Twese…</p>
         </div>
       </div>
     )
@@ -44,13 +45,11 @@ export function WorkerShell({ children }: { children: React.ReactNode }) {
     return (
       <div className="grid min-h-screen place-items-center bg-background p-4">
         <div className="w-full max-w-sm rounded-2xl border border-border bg-card p-6 text-center shadow-sm">
-          <span className="mx-auto grid size-12 place-items-center rounded-xl bg-[#f07c42] text-xl font-black text-white">
-            C
-          </span>
-          <h1 className="mt-4 text-base font-semibold">We can&apos;t reach CavGo right now</h1>
+          <Image src="/logo.png" width={48} height={48} alt="Twese" className="mx-auto size-12 object-contain" />
+          <h1 className="mt-4 text-base font-semibold">We can&apos;t reach Twese right now</h1>
           <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
             {authError ??
-              "The CavGo service isn't responding. This is usually temporary — please try again in a moment. Your session has been saved."}
+              "The Twese service isn't responding. This is usually temporary — please try again in a moment. Your session has been saved."}
           </p>
           <div className="mt-5 flex flex-col gap-2">
             <Button
@@ -72,10 +71,10 @@ export function WorkerShell({ children }: { children: React.ReactNode }) {
     return (
       <div className="grid min-h-screen place-items-center bg-background p-4">
         <div className="w-full max-w-sm rounded-2xl border border-border bg-card p-6 text-center shadow-sm">
-          <h1 className="mt-4 text-base font-semibold">We can&apos;t reach CavGo right now</h1>
+          <h1 className="mt-4 text-base font-semibold">We can&apos;t reach Twese right now</h1>
           <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
             {authError ??
-              "The CavGo service isn't responding. This is usually temporary — please try again in a moment."}
+              "The Twese service isn't responding. This is usually temporary — please try again in a moment."}
           </p>
           <div className="mt-5 flex flex-col gap-2">
             <Button
@@ -105,7 +104,7 @@ export function WorkerShell({ children }: { children: React.ReactNode }) {
             {user.email ?? 'This account'} is signed in with role{' '}
             <span className="font-mono font-semibold">{user.role}</span>. The worker console is for{' '}
             <span className="font-mono">WORKER</span> and <span className="font-mono">DRIVER</span> accounts — use the
-            CavGo admin console instead.
+            Twese admin console instead.
           </p>
           <Button className="mt-5 h-9 w-full gap-2 bg-[#1f2523] text-white hover:bg-[#343b37]" onClick={logout}>
             <LogOut className="size-3.5" /> Log out
@@ -122,10 +121,10 @@ export function WorkerShell({ children }: { children: React.ReactNode }) {
       <div className="flex h-dvh flex-col overflow-hidden bg-background text-foreground">
       <ToastContainer position="top-right" autoClose={3200} newestOnTop theme="light" toastClassName="font-sans text-sm" />
       <header className="z-20 flex min-h-20 shrink-0 items-center justify-between border-b border-border bg-background/95 px-4 backdrop-blur sm:px-6 lg:px-10">
-        <Link href="/" className="flex shrink-0 items-center gap-3" aria-label="CavGo packages">
-          <span className="grid size-9 place-items-center rounded-xl bg-[#f07c42] text-lg font-black text-white">C</span>
+        <Link href="/" className="flex shrink-0 items-center gap-3" aria-label="Twese packages">
+          <Image src="/logo.png" width={36} height={36} alt="Twese" className="size-9 object-contain" priority />
           <span className="hidden sm:block">
-            <span className="block font-mono text-sm font-bold tracking-tight">CAVGO</span>
+            <span className="block font-mono text-sm font-bold tracking-tight">TWESE</span>
             <span className="block text-[10px] uppercase tracking-[0.2em] text-muted-foreground">Worker console</span>
           </span>
         </Link>

@@ -1,6 +1,6 @@
-# IkuriyeWeb
+# Twese Web
 
-A modern worker portal built with Next.js, React 19 for the CavGo delivery platform.
+A modern worker portal built with Next.js, React 19 for the Twese delivery platform.
 
 ## Features
 

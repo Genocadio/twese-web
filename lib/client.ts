@@ -150,7 +150,7 @@ export async function rest<T = unknown>(path: string, options: RestOptions = {})
       })
     } catch (error) {
       if (error instanceof DOMException && error.name === 'AbortError') throw error
-      throw new ApiError(`Cannot reach the backend at ${url}. Is the CavGo API running?`, { status: 0 })
+      throw new ApiError(`Cannot reach the backend at ${url}. Is the Twese API running?`, { status: 0 })
     }
 
     let data: T | null = null
@@ -209,7 +209,7 @@ export async function gql<T>({ query, variables, token, signal }: GqlOptions): P
     } catch (error) {
       if (error instanceof DOMException && error.name === 'AbortError') throw error
       throw new ApiError(
-        `Cannot reach the backend at ${GRAPHQL_ENDPOINT}. Is the CavGo API running?`,
+        `Cannot reach the backend at ${GRAPHQL_ENDPOINT}. Is the Twese API running?`,
         { status: 0 },
       )
     }

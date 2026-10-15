@@ -9,14 +9,14 @@ import { useAuth } from './auth'
 import type { CompanyOffice, DeliveryPackage, Notice, PackageItem, PackageStatus, Transfer, TransferRuleType, User } from './types'
 import { toPackageItem } from './api'
 
-const SECURE_KEY = 'cavgo.secureTransferCodes'
+const SECURE_KEY = 'twese.secureTransferCodes'
 // Page size for the workspace package list — server-side pagination fetches
 // one page at a time; navigating pages replaces the visible list.
 const PACKAGES_PAGE_SIZE = 25
 // sessionStorage cache of loaded package pages — a reload paints the previously
 // loaded list (and restores scroll) instantly instead of waiting for the
 // network. Per-tab and cleared on sign-out, so it never leaks across users.
-const PACKAGES_CACHE_KEY = 'cavgo.workspacePackages'
+const PACKAGES_CACHE_KEY = 'twese.workspacePackages'
 const PACKAGES_CACHE_TTL_MS = 15 * 60_000
 // Slow safety-net sync for the operational board. New packages/offers/transfers
 // arrive via the GraphQL subscription; notices arrive via the noticeCreated
