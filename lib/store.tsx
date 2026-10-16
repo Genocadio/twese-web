@@ -464,6 +464,81 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
     }
   }, [status, token, loadWorkspace])
 
+  // GraphQL subscription — real-time offer claimed / accepted notifications.
+  // Broadcast when any driver or worker accepts an offer so other users instantly
+  // see the offer removed from open offers and marked as taken without waiting for polling.
+  useEffect(() => {
+    if (status !== 'signedIn' || !token || typeof window === 'undefined') return
+    let stop = false
+    let unsubscribe = () => {}
+    let attempts = 0
+    const connect = () => {
+      if (stop) return
+      unsubscribe()
+      unsubscribe = subscribeGraphql<{
+        offerClaimed: {
+          packageId: string
+          trackingCode: string
+          transferId: string | null
+          claimedByUserId: string
+          claimedByRole: string
+          claimedAt: string
+        }
+      }>({
+        token,
+        query: `subscription OfferClaimed {
+          offerClaimed {
+            packageId
+            trackingCode
+            transferId
+            claimedByUserId
+            claimedByRole
+            claimedAt
+          }
+        }`,
+        onNext: (data) => {
+          const event = data.offerClaimed
+          if (!event) return
+          patch((prev) => {
+            const pkgId = event.packageId
+            const transferId = event.transferId
+            const nextOffers = prev.offers.filter(
+              (p) => p.id !== pkgId && (!transferId || !p.transfers?.some((t) => t.id === transferId))
+            )
+            const nextPendingTransfers = prev.pendingTransfers.filter(
+              (t) => t.id !== transferId && !t.packages?.some((tp) => tp.packageId === pkgId)
+            )
+            const nextRequestedTransfers = prev.requestedTransfers.filter(
+              (t) => t.id !== transferId && !t.packages?.some((tp) => tp.packageId === pkgId)
+            )
+            return {
+              offers: nextOffers,
+              pendingTransfers: nextPendingTransfers,
+              requestedTransfers: nextRequestedTransfers,
+            }
+          })
+          const roleLabel = event.claimedByRole.toLowerCase()
+          toast.info(`Offer ${event.trackingCode || ''} was accepted by a ${roleLabel}`)
+          void loadWorkspace()
+        },
+        onError: () => {
+          if (stop) return
+          attempts += 1
+          if (attempts < 5) {
+            window.setTimeout(connect, Math.min(attempts * 4_000, 20_000))
+          } else {
+            console.warn('[realtime] offerClaimed subscription gave up after retries')
+          }
+        },
+      })
+    }
+    connect()
+    return () => {
+      stop = true
+      unsubscribe()
+    }
+  }, [status, token, patch, loadWorkspace])
+
   // GraphQL subscription — real-time notice feed via WebSocket (replaces Supabase Realtime).
   // New notices are pushed instantly; falls back to the 60s polling interval on failure.
   useEffect(() => {
