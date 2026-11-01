@@ -161,3 +161,60 @@
     @apply bg-background text-foreground;
   }
 }
+
+@layer utilities {
+  /* Tactile interactive hover responses with individual transform properties */
+  .interactive-tap {
+    translate: 0 0;
+    scale: 1;
+    transition: transform 0.16s cubic-bezier(0.16, 1, 0.3, 1),
+                box-shadow 0.16s cubic-bezier(0.16, 1, 0.3, 1),
+                background-color 0.15s ease,
+                border-color 0.15s ease,
+                color 0.15s ease;
+  }
+  .interactive-tap:hover {
+    translate: 0 -1px;
+    scale: 1.01;
+  }
+  .interactive-tap:active {
+    translate: 0 0;
+    scale: 0.98;
+  }
+
+  .interactive-card {
+    translate: 0 0;
+    scale: 1;
+    transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1),
+                box-shadow 0.18s cubic-bezier(0.16, 1, 0.3, 1),
+                background-color 0.15s ease,
+                border-color 0.15s ease;
+  }
+  .interactive-card:hover {
+    translate: 0 -1px;
+    box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.06), 0 2px 4px -2px rgba(0, 0, 0, 0.03);
+  }
+  .interactive-card:active {
+    translate: 0 0;
+    scale: 0.995;
+  }
+
+  .interactive-btn {
+    translate: 0 0;
+    scale: 1;
+    transition: transform 0.15s cubic-bezier(0.16, 1, 0.3, 1),
+                box-shadow 0.15s cubic-bezier(0.16, 1, 0.3, 1),
+                background-color 0.15s ease,
+                border-color 0.15s ease,
+                filter 0.15s ease;
+  }
+  .interactive-btn:hover {
+    translate: 0 -1px;
+    box-shadow: 0 3px 10px -2px rgba(0, 0, 0, 0.12);
+  }
+  .interactive-btn:active {
+    translate: 0 0;
+    scale: 0.97;
+    box-shadow: none;
+  }
+}

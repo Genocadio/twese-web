@@ -120,19 +120,19 @@ export function WorkerShell({ children }: { children: React.ReactNode }) {
     <OnboardingGate>
       <div className="flex h-dvh flex-col overflow-hidden bg-background text-foreground">
       <ToastContainer position="top-right" autoClose={3200} newestOnTop theme="light" toastClassName="font-sans text-sm" />
-      <header className="z-20 flex min-h-20 shrink-0 items-center justify-between border-b border-border bg-background/95 px-4 backdrop-blur sm:px-6 lg:px-10">
-        <Link href="/" className="flex shrink-0 items-center gap-3" aria-label="Twese packages">
-          <Image src="/logo.png" width={36} height={36} alt="Twese" className="size-9 object-contain" priority />
-          <span className="hidden sm:block">
-            <span className="block font-mono text-sm font-bold tracking-tight">TWESE</span>
-            <span className="block text-[10px] uppercase tracking-[0.2em] text-muted-foreground">Worker console</span>
+      <header className="z-20 flex h-14 shrink-0 items-center justify-between border-b border-border bg-background/95 px-4 backdrop-blur sm:px-6">
+        <Link href="/" className="group flex shrink-0 items-center gap-2.5 transition-transform duration-150 hover:scale-[1.02]" aria-label="Twese packages">
+          <Image src="/logo.png" width={32} height={32} alt="Twese" className="size-8 object-contain" priority />
+          <span className="flex items-baseline gap-2">
+            <span className="font-mono text-sm font-bold tracking-tight">TWESE</span>
+            <span className="hidden text-[10px] font-medium uppercase tracking-[0.18em] text-muted-foreground sm:inline-block">Console</span>
           </span>
         </Link>
 
-        <div className="flex items-center gap-2 sm:gap-3">
+        <div className="flex items-center gap-2 sm:gap-2.5">
           <div className="relative">
             <button
-              className="relative grid size-9 place-items-center rounded-full border border-border bg-card text-muted-foreground"
+              className="relative grid size-8.5 place-items-center rounded-full border border-border bg-card text-muted-foreground transition-all duration-150 hover:-translate-y-0.5 hover:bg-muted hover:text-foreground hover:shadow-xs active:translate-y-0 active:scale-95 cursor-pointer"
               aria-label="Notifications"
               aria-expanded={noticeOpen}
               onClick={() => {
@@ -142,13 +142,13 @@ export function WorkerShell({ children }: { children: React.ReactNode }) {
             >
               <Bell className="size-4" />
               {unread > 0 && (
-                <span className="absolute right-0.5 top-0.5 grid size-4 place-items-center rounded-full bg-[#ef8d54] text-[9px] font-bold text-white">
+                <span className="absolute -right-0.5 -top-0.5 grid size-4 place-items-center rounded-full bg-[#ef8d54] text-[9px] font-bold text-white shadow-xs">
                   {unread > 9 ? '9+' : unread}
                 </span>
               )}
             </button>
             {noticeOpen && (
-              <div className="absolute right-0 top-12 w-[min(22rem,calc(100vw-2rem))] rounded-2xl border border-border bg-card p-2 shadow-xl">
+              <div className="absolute right-0 top-11 z-50 w-[min(22rem,calc(100vw-2rem))] rounded-2xl border border-border bg-card p-2 shadow-2xl">
                 <div className="flex items-center justify-between px-3 py-2">
                   <p className="text-sm font-semibold">Notifications</p>
                   <div className="flex items-center gap-2">
@@ -158,7 +158,7 @@ export function WorkerShell({ children }: { children: React.ReactNode }) {
                     {unread > 0 && (
                       <button
                         onClick={() => void workspace.markAllRead()}
-                        className="flex items-center gap-1 text-[10px] font-medium text-muted-foreground hover:text-foreground"
+                        className="flex items-center gap-1 text-[10px] font-medium text-muted-foreground hover:text-foreground cursor-pointer"
                       >
                         <CheckCheck className="size-3" /> Mark all read
                       </button>
@@ -175,7 +175,7 @@ export function WorkerShell({ children }: { children: React.ReactNode }) {
                         onClick={() => {
                           if (!notice.viewer.readAt) void workspace.markRead(notice.viewer.id)
                         }}
-                        className="flex w-full gap-3 rounded-xl p-3 text-left hover:bg-muted"
+                        className="flex w-full gap-3 rounded-xl p-3 text-left transition-colors hover:bg-muted cursor-pointer"
                       >
                         <span className={cn('mt-1.5 size-2 shrink-0 rounded-full', notice.viewer.readAt ? 'bg-muted-foreground/40' : 'bg-[#ef8d54]')} />
                         <span>
@@ -195,7 +195,7 @@ export function WorkerShell({ children }: { children: React.ReactNode }) {
 
           <div className="relative">
             <button
-              className="flex items-center gap-2 rounded-full border border-border bg-card p-1 pr-2"
+              className="flex items-center gap-1.5 rounded-full border border-border bg-card p-0.5 pr-2 transition-all duration-150 hover:-translate-y-0.5 hover:shadow-xs active:translate-y-0 active:scale-95 cursor-pointer"
               aria-label="Open profile menu"
               aria-expanded={profileOpen}
               onClick={() => {
@@ -203,13 +203,13 @@ export function WorkerShell({ children }: { children: React.ReactNode }) {
                 setNoticeOpen(false)
               }}
             >
-              <span className="grid size-8 place-items-center rounded-full bg-[#d9e4dc] text-xs font-semibold text-[#31403a]">
+              <span className="grid size-7.5 place-items-center rounded-full bg-[#d9e4dc] text-xs font-semibold text-[#31403a]">
                 {initials(name)}
               </span>
               <ChevronDown className="hidden size-3.5 text-muted-foreground sm:block" />
             </button>
             {profileOpen && (
-              <div className="absolute right-0 top-12 w-56 rounded-2xl border border-border bg-card p-2 shadow-xl">
+              <div className="absolute right-0 top-11 z-50 w-56 rounded-2xl border border-border bg-card p-2 shadow-2xl">
                 <div className="border-b border-border px-3 py-2">
                   <p className="text-xs font-semibold">{name}</p>
                   <p className="mt-0.5 truncate text-[11px] text-muted-foreground">{user.email}</p>
@@ -219,7 +219,7 @@ export function WorkerShell({ children }: { children: React.ReactNode }) {
                 </div>
                 <button
                   onClick={() => void workspace.refresh()}
-                  className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-xs hover:bg-muted"
+                  className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-xs transition-colors hover:bg-muted cursor-pointer"
                 >
                   <RefreshCcw className="size-3.5" /> Refresh data
                 </button>
@@ -228,7 +228,7 @@ export function WorkerShell({ children }: { children: React.ReactNode }) {
                     setProfileOpen(false)
                     logout()
                   }}
-                  className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-xs text-destructive hover:bg-muted"
+                  className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-xs text-destructive transition-colors hover:bg-muted cursor-pointer"
                 >
                   <LogOut className="size-3.5" /> Log out
                 </button>
@@ -239,20 +239,16 @@ export function WorkerShell({ children }: { children: React.ReactNode }) {
       </header>
 
       {workspace.error && (
-        <div className="flex items-center justify-center gap-2 border-b border-red-200 bg-red-50 px-4 py-2 text-xs text-red-700">
+        <div className="flex items-center justify-center gap-2 border-b border-red-200 bg-red-50 px-4 py-1.5 text-xs text-red-700">
           <WifiOff className="size-3.5 shrink-0" />
           <span className="truncate">{workspace.error}</span>
-          <button onClick={() => void workspace.refresh()} className="shrink-0 font-semibold underline underline-offset-2">
+          <button onClick={() => void workspace.refresh()} className="shrink-0 font-semibold underline underline-offset-2 cursor-pointer">
             Retry
           </button>
         </div>
       )}
 
-      <main className="mx-auto flex min-h-0 w-full max-w-[1600px] flex-1 flex-col px-4 pb-4 sm:px-6 lg:px-10">{children}</main>
-
-      <footer className="mx-auto flex w-full max-w-[1600px] shrink-0 justify-end px-4 pb-5 pt-1 text-[10px] text-muted-foreground sm:px-6 lg:px-10">
-        <span className="hidden font-mono uppercase tracking-widest sm:block">Worker console · {user.role}</span>
-      </footer>
+      <main className="flex min-h-0 w-full flex-1 flex-col overflow-hidden">{children}</main>
       </div>
     </OnboardingGate>
   )
