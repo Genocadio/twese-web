@@ -329,7 +329,7 @@ export function CustodyInbox({
                               <Button
                                 size="sm"
                                 className="flex-1 bg-[#f07c42] text-white hover:bg-[#e3743e]"
-                                onClick={() => setCodePrompt({ transfer, title: 'Accept code-protected transfer', description: 'This transfer is code protected. Ask the sender for the 8-character code.' })}
+                                onClick={() => setCodePrompt({ transfer: activeTransfer, title: 'Accept code-protected transfer', description: 'This transfer is code protected. Ask the sender for the 8-character code.' })}
                               >
                                 <KeyRound className="size-3.5" /> Enter code
                               </Button>

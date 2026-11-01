@@ -475,7 +475,7 @@ export function PackageWorkspace() {
             inline={true}
             onDeliver={setDeliverItem}
             onConfirmDelivery={setConfirmItem}
-            onTransferToDriver={setTransferItemId}
+            onTransferToDriver={(item) => setTransferItemId(item.id)}
           />
         ) : (
           /* WhatsApp Desktop Empty State */

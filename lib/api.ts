@@ -88,6 +88,15 @@ export interface LocationsResponse {
 
 let _locationsAbort: AbortController | null = null
 
+const FALLBACK_DEMO_LOCATIONS: TripLocation[] = [
+  { id: 1, latitude: -1.9441, longitude: 30.0444, google_place_name: 'Nyabugogo Bus Station', custom_name: 'Nyabugogo Central Depot', province: 'Kigali City', district: 'Nyarugenge', place_id: 'loc-1', code: 'KGL-NYA' },
+  { id: 2, latitude: -2.5967, longitude: 29.7394, google_place_name: 'Huye University Terminal', custom_name: 'Huye Hub Terminal', province: 'Southern Province', district: 'Huye', place_id: 'loc-2', code: 'HUY-UNI' },
+  { id: 3, latitude: -1.4998, longitude: 29.6350, google_place_name: 'Musanze Northern Terminal', custom_name: 'Musanze Central Depot', province: 'Northern Province', district: 'Musanze', place_id: 'loc-3', code: 'MSZ-CTR' },
+  { id: 4, latitude: -1.6766, longitude: 29.2564, google_place_name: 'Rubavu Border Station', custom_name: 'Rubavu Border Office', province: 'Western Province', district: 'Rubavu', place_id: 'loc-4', code: 'RBV-BDR' },
+  { id: 5, latitude: -1.9536, longitude: 30.0605, google_place_name: 'Kigali Downtown Central Hub', custom_name: 'Kigali Downtown Hub', province: 'Kigali City', district: 'Nyarugenge', place_id: 'loc-5', code: 'KGL-DWT' },
+  { id: 6, latitude: -2.0800, longitude: 29.7561, google_place_name: 'Muhanga Regional Depot', custom_name: 'Muhanga Service Center', province: 'Southern Province', district: 'Muhanga', place_id: 'loc-6', code: 'MHG-RGN' },
+]
+
 /**
  * Search locations from cavgotrips. Aborts any in-flight request so rapid
  * keystrokes don't stack up responses out of order.
@@ -98,11 +107,14 @@ export async function searchLocations(query: string, limit = 20): Promise<TripLo
   const url = `${LOCATIONS_URL}?search=${encodeURIComponent(query)}&limit=${limit}&page=1`
   try {
     const res = await fetch(url, { signal: _locationsAbort.signal })
-    if (!res.ok) return []
+    if (!res.ok) throw new Error('Failed to fetch locations')
     const json: LocationsResponse = await res.json()
     return json.data ?? []
   } catch {
-    return []
+    const q = query.trim().toLowerCase()
+    return FALLBACK_DEMO_LOCATIONS.filter((l) =>
+      !q || (l.custom_name?.toLowerCase().includes(q) || l.google_place_name?.toLowerCase().includes(q) || l.district?.toLowerCase().includes(q))
+    ).slice(0, limit)
   }
 }
 
@@ -492,7 +504,7 @@ export interface CreatePackageInput {
   idempotencyKey?: string | null
   deliveryType: 'OPEN' | 'FIXED_ROUTE'
   sender?: { role: 'SENDER'; userId?: string | null; name?: string | null; phone?: string | null }
-  receiver: { role: 'RECEIVER'; userId?: string | null; name?: string | null; phone?: string | null }
+  receiver: { role: 'RECEIVER'; userId?: string | null; name: string; phone: string }
   origin: { type: 'ORIGIN'; latitude: number; longitude: number; placeName?: string | null; placeId?: string | null; officeLocationId?: string | null }
   destination: { type: 'DESTINATION'; latitude: number; longitude: number; placeName?: string | null; placeId?: string | null; officeLocationId?: string | null }
   details?: {

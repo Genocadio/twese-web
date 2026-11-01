@@ -4,9 +4,11 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 import { isAuthError, isInfraError, setAuthErrorHandler, type AuthRefreshOutcome } from './client'
 import { fetchProfile } from './api'
 import type { Role, User } from './types'
+import { DEMO_USER } from './demo-data'
 
 const SESSION_KEY = 'twese.session'
 const USER_KEY = 'twese.user'
+export const DEMO_STORAGE_KEY = 'twese.demo'
 
 /**
  * Roles that are NOT allowed in the worker portal. Staff/admins manage
@@ -63,6 +65,8 @@ export interface AuthState {
   nexxauthConfigured: boolean
   /** True when a refresh token is persisted (password login) — auto-refresh is possible. */
   canRefresh: boolean
+  /** True when running in demo/review mode with mock data */
+  isDemo: boolean
 }
 
 export interface AuthActions {
@@ -76,6 +80,8 @@ export interface AuthActions {
    *  kept), `{ token: null, retriable: false }` when the refresh token was
    *  rejected/revoked (session cleared, user signed out). */
   refreshSession: () => Promise<AuthRefreshOutcome>
+  enterDemoMode: () => void
+  exitDemoMode: () => void
 }
 
 interface AuthContextValue extends AuthState, AuthActions {}
@@ -224,6 +230,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     error: null,
     nexxauthConfigured: Boolean(NEXXAUTH_BASE_URL && NEXXAUTH_CLIENT_ID),
     canRefresh: false,
+    isDemo: false,
   })
   const bootstrapping = useRef(false)
   const refreshInFlight = useRef<Promise<AuthRefreshOutcome> | null>(null)
@@ -343,8 +350,43 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     [],
   )
 
+  const enterDemoMode = useCallback(() => {
+    try {
+      localStorage.setItem(DEMO_STORAGE_KEY, 'true')
+    } catch {}
+    setState({
+      status: 'signedIn',
+      token: 'demo-token',
+      user: DEMO_USER,
+      error: null,
+      nexxauthConfigured: true,
+      canRefresh: false,
+      isDemo: true,
+    })
+  }, [])
+
+  const exitDemoMode = useCallback(() => {
+    try {
+      localStorage.removeItem(DEMO_STORAGE_KEY)
+    } catch {}
+    clearStored()
+    clearStoredUser()
+    setState((prev) => ({
+      ...prev,
+      status: 'signedOut',
+      token: null,
+      user: null,
+      error: null,
+      canRefresh: false,
+      isDemo: false,
+    }))
+  }, [])
+
   const logout = useCallback(async () => {
     console.debug('[auth] logout requested')
+    try {
+      localStorage.removeItem(DEMO_STORAGE_KEY)
+    } catch {}
     const session = parseSession()
     if (session?.refresh && NEXXAUTH_BASE_URL) {
       try {
@@ -360,7 +402,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
     clearStored()
     clearStoredUser()
-    setState((prev) => ({ ...prev, status: 'signedOut', token: null, user: null, error: null, canRefresh: false }))
+    setState((prev) => ({ ...prev, status: 'signedOut', token: null, user: null, error: null, canRefresh: false, isDemo: false }))
     console.debug('[auth] logout: session cleared')
   }, [])
 
@@ -505,6 +547,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // login, use it directly — no backend call needed. If the access token
   // expired while the tab was closed, refresh it first.
   useEffect(() => {
+    // Check if demo/review mode is requested via query param or local storage
+    if (typeof window !== 'undefined') {
+      const search = window.location.search
+      const hasDemoQuery = search.includes('demo=true') || search.includes('demo=1') || search.includes('dummy=true')
+      const hasDemoStorage = localStorage.getItem(DEMO_STORAGE_KEY) === 'true'
+      if (hasDemoQuery || hasDemoStorage) {
+        try {
+          localStorage.setItem(DEMO_STORAGE_KEY, 'true')
+        } catch {}
+        console.debug('[auth] mount: initializing demo/review mode with dummy data')
+        setState({
+          status: 'signedIn',
+          token: 'demo-token',
+          user: DEMO_USER,
+          error: null,
+          nexxauthConfigured: true,
+          canRefresh: false,
+          isDemo: true,
+        })
+        return
+      }
+    }
+
     const stored = parseSession()
     if (!stored) {
       console.debug('[auth] mount: no stored session — signed out')
@@ -624,8 +689,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [state.status, state.token, state.canRefresh, refreshSession])
 
   const value = useMemo<AuthContextValue>(
-    () => ({ ...state, login, logout, handleSessionExpired, refreshSession, retryBootstrap }),
-    [state, login, logout, handleSessionExpired, refreshSession, retryBootstrap],
+    () => ({ ...state, login, logout, handleSessionExpired, refreshSession, retryBootstrap, enterDemoMode, exitDemoMode }),
+    [state, login, logout, handleSessionExpired, refreshSession, retryBootstrap, enterDemoMode, exitDemoMode],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

@@ -19,6 +19,9 @@ export interface SubscriptionOptions<T> {
 }
 
 export function subscribeGraphql<T>(opts: SubscriptionOptions<T>): () => void {
+  if (opts.token === 'demo-token') {
+    return () => {}
+  }
   let ws: WebSocket | null = null
   let closed = false
   const operationId = `s${Math.random().toString(36).slice(2)}`

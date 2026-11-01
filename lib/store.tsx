@@ -8,6 +8,15 @@ import { subscribeGraphql } from './realtime'
 import { useAuth } from './auth'
 import type { CompanyOffice, DeliveryPackage, Notice, PackageItem, PackageStatus, Transfer, TransferRuleType, User } from './types'
 import { toPackageItem } from './api'
+import {
+  DEMO_DRIVERS,
+  DEMO_NOTICES,
+  DEMO_OFFERS,
+  DEMO_OFFICE,
+  DEMO_PACKAGES,
+  DEMO_TRANSFERS,
+  DEMO_USER,
+} from './demo-data'
 
 const SECURE_KEY = 'twese.secureTransferCodes'
 // Page size for the workspace package list — server-side pagination fetches
@@ -176,6 +185,19 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
   // as soon as its own page lands even when the rest of the board is loading.
   const loadPackages = useCallback(async (): Promise<boolean> => {
     if (!token) return false
+    if (token === 'demo-token') {
+      packagesPageRef.current = 0
+      packagesTotalPagesRef.current = 1
+      patch((prev) => ({
+        packages: prev.packages.length > 0 ? prev.packages : [...DEMO_PACKAGES],
+        packagesPage: 0,
+        packagesTotalPages: 1,
+        packagesTotalCount: (prev.packages.length > 0 ? prev.packages : DEMO_PACKAGES).length,
+        hasMorePackages: false,
+        error: null,
+      }))
+      return true
+    }
     try {
       const res = await api.fetchMyPackages(token, {
         page: packagesPageRef.current,
@@ -203,6 +225,18 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
   // otherwise healthy screen.
   const loadOperational = useCallback(async (): Promise<boolean> => {
     if (!token) return false
+    if (token === 'demo-token') {
+      patch((prev) => ({
+        offers: prev.offers.length > 0 ? prev.offers : [...DEMO_OFFERS],
+        pendingTransfers: prev.pendingTransfers.length > 0 ? prev.pendingTransfers : [...DEMO_TRANSFERS],
+        requestedTransfers: [],
+        myTransfers: [],
+        drivers: DEMO_DRIVERS,
+        office: DEMO_OFFICE,
+        lastSync: Date.now(),
+      }))
+      return true
+    }
     try {
       const [offersRes, pendingRes, requestedRes, mineRes, driversRes, meRes] = await Promise.all([
         api.fetchAvailablePackages(token),
@@ -268,6 +302,13 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
   // Notice feed — initial fetch + periodic sync fallback.
   const loadNotices = useCallback(async (): Promise<boolean> => {
     if (!token) return false
+    if (token === 'demo-token') {
+      patch((prev) => ({
+        notices: prev.notices.length > 0 ? prev.notices : [...DEMO_NOTICES],
+        unread: prev.notices.length > 0 ? prev.unread : 2,
+      }))
+      return true
+    }
     try {
       const [noticesRes, unreadRes] = await Promise.all([api.fetchMyNotices(token), api.fetchUnreadCount(token)])
       patch({ notices: noticesRes.myNotices, unread: unreadRes.unreadNoticeCount })
@@ -638,6 +679,14 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
 
   const acceptTransfer = useCallback(
     async (transferId: string, code?: string, opts?: { successMessage?: string }) => {
+      if (token === 'demo-token') {
+        patch((prev) => ({
+          pendingTransfers: prev.pendingTransfers.filter((t) => t.id !== transferId),
+          requestedTransfers: prev.requestedTransfers.filter((t) => t.id !== transferId),
+        }))
+        toast.success(opts?.successMessage ?? 'Transfer accepted')
+        return
+      }
       await runMutation(() => api.acceptTransfer(token!, transferId, code))
       // Immediately remove the accepted transfer from local state so it
       // disappears from the inbox without waiting for the next 60 s sync.
@@ -652,6 +701,21 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
 
   const claimPackage = useCallback(
     async (packageId: string) => {
+      if (token === 'demo-token') {
+        const offer = state.offers.find((o) => o.id === packageId)
+        if (offer) {
+          const item = toPackageItem(offer, meId)
+          item.isMine = true
+          item.status = 'ORIGIN_OFFICE'
+          patch((prev) => ({
+            offers: prev.offers.filter((o) => o.id !== packageId),
+            packages: [item, ...prev.packages],
+            packagesTotalCount: prev.packagesTotalCount + 1,
+          }))
+        }
+        toast.success('Transfer accepted — package added to your custody')
+        return
+      }
       let resolvedTransferId: string | undefined
       await runMutation(async () => {
         // Accept an existing transfer offer on this package.
@@ -682,11 +746,60 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
       }))
       toast.success('Transfer accepted — package added to your custody')
     },
-    [token, runMutation, patch, state.offers],
+    [token, runMutation, patch, state.offers, meId],
   )
 
   const createPackage = useCallback(
     async (input: api.CreatePackageInput) => {
+      if (token === 'demo-token') {
+        const codeNum = Math.floor(100000 + Math.random() * 900000)
+        const code = `CAV-${codeNum}`
+        const newPkg: PackageItem = {
+          id: `pkg-${Date.now()}`,
+          trackingCode: code,
+          deliveryType: input.deliveryType,
+          status: 'ORIGIN_OFFICE',
+          sender: input.sender?.name ? `${input.sender.name} (${input.sender.phone || ''})` : 'Sender',
+          receiver: `${input.receiver.name || 'Receiver'} (${input.receiver.phone || ''})`,
+          origin: input.origin.placeName || 'Nyabugogo Central Depot',
+          destination: input.destination.placeName || 'Destination Office',
+          weight: input.details?.weight ? `${input.details.weight} kg` : null,
+          category: input.details?.category || 'General',
+          description: input.details?.description || 'Package intake registered',
+          fragile: Boolean(input.details?.fragile),
+          photos: [],
+          currentCustodian: { userId: meId, name: 'Jean Mukasa', role: 'WORKER' },
+          assignedDriver: null,
+          isMine: true,
+          isCreator: true,
+          openTransfer: null,
+          events: [
+            {
+              id: `evt-${Date.now()}`,
+              eventType: 'PACKAGE_CREATED',
+              actorId: meId,
+              description: 'Package registered and intake verified at Nyabugogo Depot',
+              createdAt: new Date().toISOString(),
+            },
+          ],
+          custody: [
+            {
+              id: `cst-${Date.now()}`,
+              fromEntity: input.sender?.name || 'Sender',
+              toEntity: 'Jean Mukasa (Worker)',
+              timestamp: new Date().toISOString(),
+              notes: 'Handed over at front counter',
+            },
+          ],
+          updatedAt: new Date().toISOString(),
+        }
+        patch((prev) => ({
+          packages: [newPkg, ...prev.packages],
+          packagesTotalCount: prev.packagesTotalCount + 1,
+        }))
+        toast.success('Package created')
+        return { packageId: newPkg.id, transferId: null, secureCode: null }
+      }
       return runMutation(async () => {
         const { createPackage } = await api.createPackage(token!, input)
         const packageId = createPackage.deliveryPackage.id
@@ -705,41 +818,93 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
         return result
       })
     },
-    [token, runMutation],
+    [token, runMutation, saveSecureCode, meId, patch],
   )
 
   const assignDriver = useCallback(
     async (packageId: string, driverId: string) => {
+      if (token === 'demo-token') {
+        const driver = state.drivers.find((d) => d.id === driverId)
+        const driverName = driver ? `${driver.firstName || ''} ${driver.lastName || ''}`.trim() : 'Assigned Driver'
+        patch((prev) => ({
+          packages: prev.packages.map((p) => {
+            if (p.id !== packageId) return p
+            return {
+              ...p,
+              assignedDriver: driverName,
+              status: 'ASSIGNED_DRIVER',
+              events: [
+                {
+                  id: `evt-${Date.now()}`,
+                  eventType: 'DRIVER_ASSIGNED',
+                  actorId: meId,
+                  description: `${driverName} assigned for express route`,
+                  createdAt: new Date().toISOString(),
+                },
+                ...p.events,
+              ],
+            }
+          }),
+        }))
+        toast.success('Driver assigned')
+        return
+      }
       await runMutation(() => api.assignDriver(token!, packageId, driverId, meId))
       toast.success('Driver assigned')
     },
-    [token, meId, runMutation],
+    [token, meId, runMutation, state.drivers, patch],
   )
 
   const advanceStatus = useCallback(
     async (packageId: string, status: PackageStatus, opts?: { notes?: string }) => {
+      if (token === 'demo-token') {
+        patch((prev) => ({
+          packages: prev.packages.map((p) => (p.id === packageId ? { ...p, status } : p)),
+        }))
+        toast.success(`Status updated to ${status}`)
+        return
+      }
       await runMutation(() => api.updatePackageStatus(token!, packageId, status, opts?.notes))
     },
-    [token, runMutation],
+    [token, runMutation, patch],
   )
 
   const initiateDelivery = useCallback(
     async (packageId: string) => {
+      if (token === 'demo-token') {
+        patch((prev) => ({
+          packages: prev.packages.map((p) => (p.id === packageId ? { ...p, status: 'PENDING_CONFIRMATION' } : p)),
+        }))
+        toast.success('Delivery initiated — confirmation code sent to recipient')
+        return
+      }
       await runMutation(() => api.initiateDelivery(token!, packageId))
     },
-    [token, runMutation],
+    [token, runMutation, patch],
   )
 
   const confirmDelivery = useCallback(
-    (packageId: string, deliveryCode: string) =>
-      runMutation(() => api.confirmDelivery(token!, packageId, deliveryCode)).then(() => {
+    (packageId: string, deliveryCode: string) => {
+      if (token === 'demo-token') {
+        patch((prev) => ({
+          packages: prev.packages.map((p) => (p.id === packageId ? { ...p, status: 'DELIVERED' } : p)),
+        }))
         toast.success('Delivery confirmed')
-      }),
-    [token, runMutation],
+        return Promise.resolve()
+      }
+      return runMutation(() => api.confirmDelivery(token!, packageId, deliveryCode)).then(() => {
+        toast.success('Delivery confirmed')
+      })
+    },
+    [token, runMutation, patch],
   )
 
   const regenerateDeliveryCode = useCallback(
     async (packageId: string) => {
+      if (token === 'demo-token') {
+        toast.success('Fresh delivery code generated (demo: 839201)')
+        return
+      }
       await runMutation(() => api.regenerateDeliveryCode(token!, packageId))
     },
     [token, runMutation],
@@ -747,30 +912,72 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
 
   const createTransferForPackages = useCallback(
     async (packageIds: string[], ruleType: TransferRuleType, matchUserId?: string | null) => {
+      if (token === 'demo-token') {
+        toast.success('Transfer created for selected packages')
+        return {
+          id: `trf-${Date.now()}`,
+          creatorId: meId,
+          ruleType,
+          acceptorType: 'DRIVER' as const,
+          matchCompanyId: 'cmp-twese-express',
+          matchUserId: matchUserId ?? null,
+          requestorId: null,
+          status: 'PENDING' as const,
+          transferCode: ruleType === 'SECURE' ? '884920' : null,
+          packages: packageIds.map((id) => ({
+            id: `tpl-${Date.now()}-${id}`,
+            transferId: `trf-${Date.now()}`,
+            packageId: id,
+            addedBy: meId,
+            addedAt: new Date().toISOString(),
+          })),
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        }
+      }
       const result = await runMutation(() =>
         api.createTransfer(token!, packageIds, ruleType, 'DRIVER', matchUserId)
       )
       return result.createTransfer
     },
-    [token, runMutation],
+    [token, runMutation, meId],
   )
 
   const cancelTransfer = useCallback(
-    (transferId: string) =>
-      runMutation(() => api.cancelTransfer(token!, transferId)).then(() => {
+    (transferId: string) => {
+      if (token === 'demo-token') {
         patch((prev) => ({
           pendingTransfers: prev.pendingTransfers.filter((t) => t.id !== transferId),
           requestedTransfers: prev.requestedTransfers.filter((t) => t.id !== transferId),
           myTransfers: prev.myTransfers.filter((t) => t.id !== transferId),
         }))
         toast.success('Transfer cancelled')
-      }),
+        return Promise.resolve()
+      }
+      return runMutation(() => api.cancelTransfer(token!, transferId)).then(() => {
+        patch((prev) => ({
+          pendingTransfers: prev.pendingTransfers.filter((t) => t.id !== transferId),
+          requestedTransfers: prev.requestedTransfers.filter((t) => t.id !== transferId),
+          myTransfers: prev.myTransfers.filter((t) => t.id !== transferId),
+        }))
+        toast.success('Transfer cancelled')
+      })
+    },
     [token, runMutation, patch],
   )
 
   const confirmTransfer = useCallback(
-    (transferId: string) =>
-      runMutation(() => api.confirmTransfer(token!, transferId)).then(() => {
+    (transferId: string) => {
+      if (token === 'demo-token') {
+        patch((prev) => ({
+          pendingTransfers: prev.pendingTransfers.filter((t) => t.id !== transferId),
+          requestedTransfers: prev.requestedTransfers.filter((t) => t.id !== transferId),
+          myTransfers: prev.myTransfers.map((t) => (t.id === transferId ? { ...t, status: 'DONE' as const } : t)),
+        }))
+        toast.success('Transfer confirmed — packages accepted')
+        return Promise.resolve()
+      }
+      return runMutation(() => api.confirmTransfer(token!, transferId)).then(() => {
         patch((prev) => ({
           pendingTransfers: prev.pendingTransfers.filter((t) => t.id !== transferId),
           requestedTransfers: prev.requestedTransfers.filter((t) => t.id !== transferId),
@@ -779,13 +986,22 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
           ),
         }))
         toast.success('Transfer confirmed — packages accepted')
-      }),
+      })
+    },
     [token, runMutation, patch],
   )
 
   const rejectTransfer = useCallback(
-    (transferId: string) =>
-      runMutation(() => api.rejectTransfer(token!, transferId)).then(() => {
+    (transferId: string) => {
+      if (token === 'demo-token') {
+        patch((prev) => ({
+          requestedTransfers: prev.requestedTransfers.filter((t) => t.id !== transferId),
+          myTransfers: prev.myTransfers.map((t) => (t.id === transferId ? { ...t, status: 'PENDING' as const, requestorId: null } : t)),
+        }))
+        toast.success('Transfer request rejected')
+        return Promise.resolve()
+      }
+      return runMutation(() => api.rejectTransfer(token!, transferId)).then(() => {
         patch((prev) => ({
           requestedTransfers: prev.requestedTransfers.filter((t) => t.id !== transferId),
           myTransfers: prev.myTransfers.map((t) =>
@@ -793,22 +1009,38 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
           ),
         }))
         toast.success('Transfer request rejected')
-      }),
+      })
+    },
     [token, runMutation, patch],
   )
 
   const regenerateTransferCode = useCallback(
     async (transferId: string) => {
+      if (token === 'demo-token') {
+        const code = '654321'
+        saveSecureCode(transferId, code)
+        toast.success('Transfer code regenerated: 654321')
+        return code
+      }
       const result = await runMutation(() => api.regenerateTransferCode(token!, transferId))
       const code = result.regenerateTransferCode.transferCode
       if (code) saveSecureCode(transferId, code)
       return code ?? ''
     },
-    [token, runMutation],
+    [token, runMutation, saveSecureCode],
   )
 
   const markRead = useCallback(
     async (viewerId: string) => {
+      if (token === 'demo-token') {
+        patch((prev) => ({
+          notices: prev.notices.map((n) =>
+            n.viewer.id === viewerId ? { ...n, viewer: { ...n.viewer, readAt: new Date().toISOString() } } : n,
+          ),
+          unread: Math.max(0, prev.unread - 1),
+        }))
+        return
+      }
       await runMutation(() => api.markNoticeRead(token!, viewerId))
       patch((prev) => ({
         notices: prev.notices.map((n) =>
@@ -821,6 +1053,13 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
   )
 
   const markAllRead = useCallback(async () => {
+    if (token === 'demo-token') {
+      patch((prev) => ({
+        notices: prev.notices.map((n) => ({ ...n, viewer: { ...n.viewer, readAt: new Date().toISOString() } })),
+        unread: 0,
+      }))
+      return
+    }
     const unread = state.notices.filter((n) => !n.viewer.readAt)
     if (unread.length === 0) return
     await runMutation(async () => {

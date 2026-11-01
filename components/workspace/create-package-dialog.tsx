@@ -172,7 +172,13 @@ export function CreatePackageDialog({ open, onClose }: { open: boolean; onClose:
 
   const [reveal, setReveal] = useState<{ code: string | null } | null>(null)
 
-  const valid = Boolean(office && senderName.trim() && receiverName.trim() && destName.trim())
+  const valid = Boolean(
+    office &&
+    senderName.trim() &&
+    receiverName.trim() &&
+    receiverPhone.trim() &&
+    destName.trim()
+  )
 
   async function submit() {
     if (!valid || busy || !office) return
@@ -181,7 +187,7 @@ export function CreatePackageDialog({ open, onClose }: { open: boolean; onClose:
       const result = await createPackage({
         deliveryType,
         sender: { role: 'SENDER', name: senderName.trim(), phone: senderPhone.trim() || null },
-        receiver: { role: 'RECEIVER', name: receiverName.trim(), phone: receiverPhone.trim() || null },
+        receiver: { role: 'RECEIVER', name: receiverName.trim(), phone: receiverPhone.trim() },
         origin: { type: 'ORIGIN', latitude: originCoords[0], longitude: originCoords[1], placeName: originName.trim(), placeId: originPlaceId, officeLocationId: originOfficeLocationId },
         destination: { type: 'DESTINATION', latitude: destCoords[0], longitude: destCoords[1], placeName: destName.trim(), placeId: destPlaceId },
         details: {
@@ -226,9 +232,23 @@ export function CreatePackageDialog({ open, onClose }: { open: boolean; onClose:
                 <Input placeholder="Phone (optional)" value={senderPhone} onChange={(event) => setSenderPhone(event.target.value)} />
               </div>
               <div className="flex flex-col gap-2">
-                <p className="text-xs font-medium text-muted-foreground">Receiver</p>
-                <Input placeholder="Name" value={receiverName} onChange={(event) => setReceiverName(event.target.value)} />
-                <Input placeholder="Phone (optional)" value={receiverPhone} onChange={(event) => setReceiverPhone(event.target.value)} />
+                <div className="flex items-center justify-between">
+                  <p className="text-xs font-medium text-muted-foreground">Receiver</p>
+                  <span className="text-[10px] font-medium text-rose-500">* Required</span>
+                </div>
+                <Input
+                  placeholder="Name *"
+                  value={receiverName}
+                  onChange={(event) => setReceiverName(event.target.value)}
+                  required
+                />
+                <Input
+                  placeholder="Phone number *"
+                  type="tel"
+                  value={receiverPhone}
+                  onChange={(event) => setReceiverPhone(event.target.value)}
+                  required
+                />
               </div>
             </div>
 

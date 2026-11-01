@@ -66,7 +66,7 @@ export function useOnboarding(
   })
 
   const checkMembership = useCallback(async (): Promise<void> => {
-    if (!token) return
+    if (!token || token === 'demo-token') return
     try {
       // Single sync call carries both the membership AND the access-request
       // status — no separate /main read for current-user data.

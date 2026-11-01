@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import Image from 'next/image'
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Bell, CheckCheck, ChevronDown, Loader2, LogOut, RefreshCcw, WifiOff } from 'lucide-react'
 import { ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
@@ -16,10 +16,45 @@ import { displayName, initials, timeAgo } from '@/lib/format'
 import { cn } from '@/lib/utils'
 
 export function WorkerShell({ children }: { children: React.ReactNode }) {
-  const { status, user, logout, error: authError, retryBootstrap } = useAuth()
+  const { status, user, logout, isDemo, exitDemoMode, error: authError, retryBootstrap } = useAuth()
   const workspace = useWorkspace()
   const [noticeOpen, setNoticeOpen] = useState(false)
   const [profileOpen, setProfileOpen] = useState(false)
+  const noticeRef = useRef<HTMLDivElement>(null)
+  const profileRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!noticeOpen && !profileOpen) return
+
+    function handleClickOutside(event: MouseEvent | TouchEvent) {
+      const target = event.target as Node | null
+      if (!target) return
+
+      if (noticeOpen && noticeRef.current && !noticeRef.current.contains(target)) {
+        setNoticeOpen(false)
+      }
+      if (profileOpen && profileRef.current && !profileRef.current.contains(target)) {
+        setProfileOpen(false)
+      }
+    }
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === 'Escape') {
+        setNoticeOpen(false)
+        setProfileOpen(false)
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    document.addEventListener('touchstart', handleClickOutside)
+    document.addEventListener('keydown', handleKeyDown)
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+      document.removeEventListener('touchstart', handleClickOutside)
+      document.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [noticeOpen, profileOpen])
 
   if (status === 'loading') {
     return (
@@ -130,7 +165,7 @@ export function WorkerShell({ children }: { children: React.ReactNode }) {
         </Link>
 
         <div className="flex items-center gap-2 sm:gap-2.5">
-          <div className="relative">
+          <div ref={noticeRef} className="relative">
             <button
               className="relative grid size-8.5 place-items-center rounded-full border border-border bg-card text-muted-foreground transition-all duration-150 hover:-translate-y-0.5 hover:bg-muted hover:text-foreground hover:shadow-xs active:translate-y-0 active:scale-95 cursor-pointer"
               aria-label="Notifications"
@@ -193,7 +228,7 @@ export function WorkerShell({ children }: { children: React.ReactNode }) {
             )}
           </div>
 
-          <div className="relative">
+          <div ref={profileRef} className="relative">
             <button
               className="flex items-center gap-1.5 rounded-full border border-border bg-card p-0.5 pr-2 transition-all duration-150 hover:-translate-y-0.5 hover:shadow-xs active:translate-y-0 active:scale-95 cursor-pointer"
               aria-label="Open profile menu"
@@ -237,6 +272,32 @@ export function WorkerShell({ children }: { children: React.ReactNode }) {
           </div>
         </div>
       </header>
+
+      {isDemo && (
+        <div className="z-10 flex shrink-0 items-center justify-between border-b border-amber-200/80 bg-amber-50/90 px-4 py-1.5 text-xs text-amber-900 backdrop-blur-xs dark:border-amber-900/40 dark:bg-amber-950/40 dark:text-amber-200">
+          <div className="flex items-center gap-2 overflow-hidden">
+            <span className="flex size-2 shrink-0 rounded-full bg-amber-500 animate-pulse" />
+            <span className="shrink-0 font-semibold">Demo Review Mode:</span>
+            <span className="truncate text-amber-800 dark:text-amber-300">
+              Interactive review with dummy data (WhatsApp-style master-detail workspace)
+            </span>
+          </div>
+          <div className="flex shrink-0 items-center gap-2">
+            <button
+              onClick={() => void workspace.refresh()}
+              className="rounded px-2 py-0.5 text-[11px] font-medium bg-amber-200/60 hover:bg-amber-200 text-amber-950 dark:bg-amber-900/60 dark:text-amber-100 cursor-pointer transition-colors"
+            >
+              Reset Data
+            </button>
+            <button
+              onClick={exitDemoMode}
+              className="rounded px-2 py-0.5 text-[11px] font-medium bg-amber-200/60 hover:bg-amber-200 text-amber-950 dark:bg-amber-900/60 dark:text-amber-100 cursor-pointer transition-colors"
+            >
+              Exit Demo
+            </button>
+          </div>
+        </div>
+      )}
 
       {workspace.error && (
         <div className="flex items-center justify-center gap-2 border-b border-red-200 bg-red-50 px-4 py-1.5 text-xs text-red-700">

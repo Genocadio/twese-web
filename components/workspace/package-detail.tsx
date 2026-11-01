@@ -60,7 +60,7 @@ export function PackageDetail({
   // Fetch full details (timeline, custody trail, media) on selection
   useEffect(() => {
     setFull(null)
-    if (!item || !token) return
+    if (!item || !token || token === 'demo-token') return
     let cancelled = false
     fetchPackageById(token, item.id)
       .then(({ package: pkg }) => {

@@ -2,13 +2,13 @@
 
 import { useState } from 'react'
 import Image from 'next/image'
-import { AlertCircle, Loader2, Lock } from 'lucide-react'
+import { AlertCircle, Loader2, Lock, Sparkles } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useAuth } from '@/lib/auth'
 
 export function LoginScreen() {
-  const { login, error } = useAuth()
+  const { login, enterDemoMode, error } = useAuth()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [busy, setBusy] = useState(false)
@@ -43,40 +43,56 @@ export function LoginScreen() {
           )}
 
           <form onSubmit={submitPassword} className="mt-5 flex flex-col gap-3">
-              <label className="flex flex-col gap-1.5">
-                <span className="text-xs font-medium text-muted-foreground">Email</span>
+            <label className="flex flex-col gap-1.5">
+              <span className="text-xs font-medium text-muted-foreground">Email</span>
+              <Input
+                type="email"
+                required
+                autoComplete="email"
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
+                placeholder="worker@twese.example"
+                className="h-10"
+              />
+            </label>
+            <label className="flex flex-col gap-1.5">
+              <span className="text-xs font-medium text-muted-foreground">Password</span>
+              <div className="relative">
+                <Lock className="absolute left-3 top-3 size-4 text-muted-foreground" />
                 <Input
-                  type="email"
+                  type="password"
                   required
-                  autoComplete="email"
-                  value={email}
-                  onChange={(event) => setEmail(event.target.value)}
-                  placeholder="worker@twese.example"
-                  className="h-10"
+                  autoComplete="current-password"
+                  value={password}
+                  onChange={(event) => setPassword(event.target.value)}
+                  placeholder="••••••••"
+                  className="h-10 pl-9"
                 />
-              </label>
-              <label className="flex flex-col gap-1.5">
-                <span className="text-xs font-medium text-muted-foreground">Password</span>
-                <div className="relative">
-                  <Lock className="absolute left-3 top-3 size-4 text-muted-foreground" />
-                  <Input
-                    type="password"
-                    required
-                    autoComplete="current-password"
-                    value={password}
-                    onChange={(event) => setPassword(event.target.value)}
-                    placeholder="••••••••"
-                    className="h-10 pl-9"
-                  />
-                </div>
-              </label>
-              <Button type="submit" disabled={busy} className="mt-2 h-10 gap-2 bg-[#1f2523] text-white hover:bg-[#343b37]">
-                {busy && <Loader2 className="size-4 animate-spin" />}
-                {busy ? 'Signing in…' : 'Sign in'}
-              </Button>
+              </div>
+            </label>
+            <Button type="submit" disabled={busy} className="mt-2 h-10 gap-2 bg-[#1f2523] text-white hover:bg-[#343b37]">
+              {busy && <Loader2 className="size-4 animate-spin" />}
+              {busy ? 'Signing in…' : 'Sign in'}
+            </Button>
+          </form>
 
-            </form>
+          <div className="relative my-4 flex items-center">
+            <div className="flex-grow border-t border-border" />
+            <span className="mx-2 shrink-0 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+              or review UI
+            </span>
+            <div className="flex-grow border-t border-border" />
+          </div>
 
+          <Button
+            type="button"
+            variant="outline"
+            onClick={enterDemoMode}
+            className="h-10 w-full gap-2 border-dashed border-amber-300 bg-amber-500/5 text-foreground hover:bg-amber-500/10 dark:border-amber-700 cursor-pointer"
+          >
+            <Sparkles className="size-4 text-[#ef8d54]" />
+            <span className="text-xs font-medium">Explore with Dummy Data</span>
+          </Button>
         </div>
 
         <p className="mt-6 text-center text-[11px] leading-relaxed text-muted-foreground">
