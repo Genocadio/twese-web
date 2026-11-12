@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { useEffect, useRef, useState } from 'react'
-import { Bell, CheckCheck, ChevronDown, Loader2, LogOut, RefreshCcw, WifiOff } from 'lucide-react'
+import { Bell, CheckCheck, ChevronDown, Loader2, LogOut, RefreshCcw, Trash2, AlertTriangle, WifiOff } from 'lucide-react'
 import { ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import { Badge } from '@/components/ui/badge'
@@ -16,10 +16,13 @@ import { displayName, initials, timeAgo } from '@/lib/format'
 import { cn } from '@/lib/utils'
 
 export function WorkerShell({ children }: { children: React.ReactNode }) {
-  const { status, user, logout, isDemo, exitDemoMode, error: authError, retryBootstrap } = useAuth()
+  const { status, user, logout, deleteAccount, isDemo, exitDemoMode, error: authError, retryBootstrap } = useAuth()
   const workspace = useWorkspace()
   const [noticeOpen, setNoticeOpen] = useState(false)
   const [profileOpen, setProfileOpen] = useState(false)
+  const [confirmDelete, setConfirmDelete] = useState(false)
+  const [deleting, setDeleting] = useState(false)
+  const [deleteError, setDeleteError] = useState<string | null>(null)
   const noticeRef = useRef<HTMLDivElement>(null)
   const profileRef = useRef<HTMLDivElement>(null)
 
@@ -267,11 +270,79 @@ export function WorkerShell({ children }: { children: React.ReactNode }) {
                 >
                   <LogOut className="size-3.5" /> Log out
                 </button>
+                <div className="my-1 border-t border-border" />
+                <button
+                  onClick={() => {
+                    setProfileOpen(false)
+                    setDeleteError(null)
+                    setConfirmDelete(true)
+                  }}
+                  className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-xs text-red-600 transition-colors hover:bg-red-50 dark:hover:bg-red-950/20 cursor-pointer"
+                >
+                  <Trash2 className="size-3.5" /> Delete account
+                </button>
               </div>
             )}
           </div>
         </div>
       </header>
+
+      {/* Delete Account Confirmation Dialog */}
+      {confirmDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4">
+          <div className="w-full max-w-md rounded-2xl border border-border bg-card p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-150">
+            <div className="flex items-center gap-3 text-red-600">
+              <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-red-100 dark:bg-red-900/30">
+                <AlertTriangle className="size-5" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-foreground">Delete Account?</h3>
+                <p className="text-xs text-muted-foreground">This action will schedule your account for permanent removal.</p>
+              </div>
+            </div>
+
+            <p className="mt-4 text-xs leading-relaxed text-muted-foreground">
+              Your account will be deactivated immediately and you will not be able to log back in. In compliance with data protection policies, all your profile records and associated data will be permanently purged in 30 days.
+            </p>
+
+            {deleteError && (
+              <div className="mt-3 rounded-lg border border-red-200 bg-red-50 p-2 text-xs text-red-700 dark:border-red-900/50 dark:bg-red-950/50 dark:text-red-300">
+                {deleteError}
+              </div>
+            )}
+
+            <div className="mt-6 flex items-center justify-end gap-3">
+              <Button
+                variant="outline"
+                disabled={deleting}
+                onClick={() => setConfirmDelete(false)}
+                className="h-9 px-4 text-xs"
+              >
+                Cancel
+              </Button>
+              <Button
+                disabled={deleting}
+                onClick={async () => {
+                  setDeleting(true)
+                  setDeleteError(null)
+                  try {
+                    await deleteAccount()
+                    setConfirmDelete(false)
+                  } catch (err: any) {
+                    setDeleteError(err.message || 'Failed to delete account')
+                  } finally {
+                    setDeleting(false)
+                  }
+                }}
+                className="h-9 gap-1.5 bg-red-600 text-white hover:bg-red-700 dark:bg-red-600 dark:hover:bg-red-700 text-xs font-semibold"
+              >
+                {deleting && <Loader2 className="size-3.5 animate-spin" />}
+                {deleting ? 'Deleting…' : 'Permanently Delete'}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {isDemo && (
         <div className="z-10 flex shrink-0 items-center justify-between border-b border-amber-200/80 bg-amber-50/90 px-4 py-1.5 text-xs text-amber-900 backdrop-blur-xs dark:border-amber-900/40 dark:bg-amber-950/40 dark:text-amber-200">

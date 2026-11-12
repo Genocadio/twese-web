@@ -82,6 +82,7 @@ export interface AuthActions {
   refreshSession: () => Promise<AuthRefreshOutcome>
   enterDemoMode: () => void
   exitDemoMode: () => void
+  deleteAccount: () => Promise<void>
 }
 
 interface AuthContextValue extends AuthState, AuthActions {}
@@ -406,6 +407,35 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     console.debug('[auth] logout: session cleared')
   }, [])
 
+  const deleteAccount = useCallback(async () => {
+    console.debug('[auth] deleteAccount requested')
+    if (state.isDemo) {
+      exitDemoMode()
+      return
+    }
+    const session = parseSession()
+    if (session?.access && NEXXAUTH_BASE_URL) {
+      try {
+        const res = await fetch(`${NEXXAUTH_BASE_URL}/organisations/users/me`, {
+          method: 'DELETE',
+          headers: {
+            ...nexxauthHeaders(),
+            Authorization: `Bearer ${session.access}`,
+          },
+        })
+        if (!res.ok && res.status !== 204) {
+          const body = await res.json().catch(() => ({}))
+          throw new Error(body.message || `Account deletion failed (${res.status})`)
+        }
+        console.debug('[auth] deleteAccount: server-side deletion succeeded')
+      } catch (err: any) {
+        console.error('[auth] deleteAccount failed', err)
+        throw err
+      }
+    }
+    await logout()
+  }, [state.isDemo, exitDemoMode, logout])
+
   const handleSessionExpired = useCallback(() => {
     if (state.status !== 'signedIn') return
     console.warn('[auth] session expired — clearing stored session')
@@ -689,8 +719,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [state.status, state.token, state.canRefresh, refreshSession])
 
   const value = useMemo<AuthContextValue>(
-    () => ({ ...state, login, logout, handleSessionExpired, refreshSession, retryBootstrap, enterDemoMode, exitDemoMode }),
-    [state, login, logout, handleSessionExpired, refreshSession, retryBootstrap, enterDemoMode, exitDemoMode],
+    () => ({ ...state, login, logout, deleteAccount, handleSessionExpired, refreshSession, retryBootstrap, enterDemoMode, exitDemoMode }),
+    [state, login, logout, deleteAccount, handleSessionExpired, refreshSession, retryBootstrap, enterDemoMode, exitDemoMode],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
@@ -700,4 +730,27 @@ export function useAuth(): AuthContextValue {
   const ctx = useContext(AuthContext)
   if (!ctx) throw new Error('useAuth must be used inside <AuthProvider>')
   return ctx
+}
+
+/** Direct 1-step account deletion via credentials without requiring a prior login session. */
+export async function deleteAccountDirect(identifier: string, password: string): Promise<void> {
+  const baseUrl = process.env.NEXT_PUBLIC_NEXXAUTH_BASE_URL?.replace(/\/+$/, '') || 'https://auth.med.rw/master'
+  const clientId = process.env.NEXT_PUBLIC_NEXXAUTH_CLIENT_ID || ''
+
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' }
+  if (clientId) headers['X-Client-Id'] = clientId
+  if (typeof window !== 'undefined' && window.location?.origin) {
+    headers['Origin'] = window.location.origin
+  }
+
+  const res = await fetch(`${baseUrl}/auth/delete-account`, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify({ identifier, password }),
+  })
+
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}))
+    throw new Error(data.message || `Account deletion failed (HTTP ${res.status})`)
+  }
 }

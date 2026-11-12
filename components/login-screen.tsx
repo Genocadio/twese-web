@@ -99,6 +99,13 @@ export function LoginScreen() {
           Worker accounts must be assigned the <span className="font-mono">WORKER</span> or{' '}
           <span className="font-mono">DRIVER</span> role by a Twese administrator.
         </p>
+
+        <p className="mt-2 text-center text-[11px] leading-relaxed text-muted-foreground">
+          Need to delete your account?{' '}
+          <a href="/delete-account" className="font-medium text-red-600 hover:underline dark:text-red-400">
+            Delete account
+          </a>
+        </p>
       </div>
     </div>
   )
