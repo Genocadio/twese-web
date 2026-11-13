@@ -5,23 +5,31 @@ import './globals.css'
 export const metadata: Metadata = {
   title: 'Twese Worker Console',
   description: 'A focused package custody workspace for intake, handoffs, and route progress.',
-  generator: 'v0.app',
   icons: {
     icon: [
       {
-        url: '/favicon.ico',
+        url: '/favicon.ico?v=2',
         sizes: 'any',
       },
       {
-        url: '/icon-light-32x32.png',
-        media: '(prefers-color-scheme: light)',
+        url: '/icon-light-32x32.png?v=2',
+        type: 'image/png',
+        sizes: '32x32',
       },
       {
-        url: '/icon-dark-32x32.png',
-        media: '(prefers-color-scheme: dark)',
+        url: '/icon.png?v=2',
+        type: 'image/png',
+        sizes: '192x192',
       },
     ],
-    apple: '/apple-icon.png',
+    apple: [
+      {
+        url: '/apple-icon.png?v=2',
+        sizes: '180x180',
+        type: 'image/png',
+      },
+    ],
+    shortcut: '/favicon.ico?v=2',
   },
 }
 
