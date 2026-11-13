@@ -2,13 +2,13 @@
 
 import { useState } from 'react'
 import Image from 'next/image'
-import { AlertCircle, Loader2, Lock, Sparkles } from 'lucide-react'
+import { AlertCircle, Loader2, Lock } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useAuth } from '@/lib/auth'
 
 export function LoginScreen() {
-  const { login, enterDemoMode, error } = useAuth()
+  const { login, error } = useAuth()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [busy, setBusy] = useState(false)
@@ -75,36 +75,11 @@ export function LoginScreen() {
               {busy ? 'Signing in…' : 'Sign in'}
             </Button>
           </form>
-
-          <div className="relative my-4 flex items-center">
-            <div className="flex-grow border-t border-border" />
-            <span className="mx-2 shrink-0 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
-              or review UI
-            </span>
-            <div className="flex-grow border-t border-border" />
-          </div>
-
-          <Button
-            type="button"
-            variant="outline"
-            onClick={enterDemoMode}
-            className="h-10 w-full gap-2 border-dashed border-amber-300 bg-amber-500/5 text-foreground hover:bg-amber-500/10 dark:border-amber-700 cursor-pointer"
-          >
-            <Sparkles className="size-4 text-[#ef8d54]" />
-            <span className="text-xs font-medium">Explore with Dummy Data</span>
-          </Button>
         </div>
 
         <p className="mt-6 text-center text-[11px] leading-relaxed text-muted-foreground">
           Worker accounts must be assigned the <span className="font-mono">WORKER</span> or{' '}
           <span className="font-mono">DRIVER</span> role by a Twese administrator.
-        </p>
-
-        <p className="mt-2 text-center text-[11px] leading-relaxed text-muted-foreground">
-          Need to delete your account?{' '}
-          <a href="/delete-account" className="font-medium text-red-600 hover:underline dark:text-red-400">
-            Delete account
-          </a>
         </p>
       </div>
     </div>

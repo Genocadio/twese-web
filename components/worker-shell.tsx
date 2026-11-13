@@ -16,7 +16,7 @@ import { displayName, initials, timeAgo } from '@/lib/format'
 import { cn } from '@/lib/utils'
 
 export function WorkerShell({ children }: { children: React.ReactNode }) {
-  const { status, user, logout, deleteAccount, isDemo, exitDemoMode, error: authError, retryBootstrap } = useAuth()
+  const { status, user, logout, deleteAccount, error: authError, retryBootstrap } = useAuth()
   const workspace = useWorkspace()
   const [noticeOpen, setNoticeOpen] = useState(false)
   const [profileOpen, setProfileOpen] = useState(false)
@@ -344,31 +344,6 @@ export function WorkerShell({ children }: { children: React.ReactNode }) {
         </div>
       )}
 
-      {isDemo && (
-        <div className="z-10 flex shrink-0 items-center justify-between border-b border-amber-200/80 bg-amber-50/90 px-4 py-1.5 text-xs text-amber-900 backdrop-blur-xs dark:border-amber-900/40 dark:bg-amber-950/40 dark:text-amber-200">
-          <div className="flex items-center gap-2 overflow-hidden">
-            <span className="flex size-2 shrink-0 rounded-full bg-amber-500 animate-pulse" />
-            <span className="shrink-0 font-semibold">Demo Review Mode:</span>
-            <span className="truncate text-amber-800 dark:text-amber-300">
-              Interactive review with dummy data (WhatsApp-style master-detail workspace)
-            </span>
-          </div>
-          <div className="flex shrink-0 items-center gap-2">
-            <button
-              onClick={() => void workspace.refresh()}
-              className="rounded px-2 py-0.5 text-[11px] font-medium bg-amber-200/60 hover:bg-amber-200 text-amber-950 dark:bg-amber-900/60 dark:text-amber-100 cursor-pointer transition-colors"
-            >
-              Reset Data
-            </button>
-            <button
-              onClick={exitDemoMode}
-              className="rounded px-2 py-0.5 text-[11px] font-medium bg-amber-200/60 hover:bg-amber-200 text-amber-950 dark:bg-amber-900/60 dark:text-amber-100 cursor-pointer transition-colors"
-            >
-              Exit Demo
-            </button>
-          </div>
-        </div>
-      )}
 
       {workspace.error && (
         <div className="flex items-center justify-center gap-2 border-b border-red-200 bg-red-50 px-4 py-1.5 text-xs text-red-700">

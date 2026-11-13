@@ -577,27 +577,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // login, use it directly — no backend call needed. If the access token
   // expired while the tab was closed, refresh it first.
   useEffect(() => {
-    // Check if demo/review mode is requested via query param or local storage
+    // Clear any stale demo/dummy data storage from previous sessions
     if (typeof window !== 'undefined') {
-      const search = window.location.search
-      const hasDemoQuery = search.includes('demo=true') || search.includes('demo=1') || search.includes('dummy=true')
-      const hasDemoStorage = localStorage.getItem(DEMO_STORAGE_KEY) === 'true'
-      if (hasDemoQuery || hasDemoStorage) {
-        try {
-          localStorage.setItem(DEMO_STORAGE_KEY, 'true')
-        } catch {}
-        console.debug('[auth] mount: initializing demo/review mode with dummy data')
-        setState({
-          status: 'signedIn',
-          token: 'demo-token',
-          user: DEMO_USER,
-          error: null,
-          nexxauthConfigured: true,
-          canRefresh: false,
-          isDemo: true,
-        })
-        return
-      }
+      try {
+        localStorage.removeItem(DEMO_STORAGE_KEY)
+      } catch {}
     }
 
     const stored = parseSession()
