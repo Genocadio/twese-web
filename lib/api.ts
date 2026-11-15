@@ -1,4 +1,4 @@
-import { gql, LOCATIONS_URL, rest } from './client'
+import { gql, LOCATIONS_URL, FILE_UPLOAD_URL, rest } from './client'
 import type {
   CompanyAccessRequestStatus,
   CompanyOffice,
@@ -724,5 +724,57 @@ export function toPackageItem(pkg: DeliveryPackage, meId: string): PackageItem {
     events: pkg.events ?? [],
     custody: pkg.custody ?? [],
     updatedAt: pkg.updatedAt,
+  }
+}
+
+/**
+ * Public client tracking query — fetch package by human tracking code (e.g. CAV-123456).
+ * No authentication required by ikuriyebackend.
+ */
+export async function fetchPackageByTrackingCode(code: string): Promise<PackageItem | null> {
+  const cleanCode = code.trim().toUpperCase()
+  if (!cleanCode) return null
+  const data = await gql<{ packageByTrackingCode: PackagePayload | null }>({
+    query: `query PackageByTrackingCode($code: String!) {
+      packageByTrackingCode(code: $code) {
+        ${PACKAGE_FIELDS}
+      }
+    }`,
+    variables: { code: cleanCode },
+  })
+  if (!data?.packageByTrackingCode) return null
+  return toPackageItem(data.packageByTrackingCode)
+}
+
+/**
+ * Upload an image or file to ikuriyebackend storage.
+ * Gateway route: POST /ikuriye/api/files/upload
+ */
+export async function uploadFile(
+  token: string,
+  file: File | Blob,
+  purpose = 'PACKAGE',
+): Promise<{ mediaId: string; url: string }> {
+  const formData = new FormData()
+  formData.append('file', file)
+  formData.append('purpose', purpose)
+
+  const res = await fetch(FILE_UPLOAD_URL, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    body: formData,
+  })
+
+  if (!res.ok) {
+    throw new Error(`File upload failed (HTTP ${res.status})`)
+  }
+
+  const json = (await res.json()) as { mediaId?: string | number; url?: string; error?: string }
+  if (json.error) throw new Error(json.error)
+  return {
+    mediaId: String(json.mediaId ?? ''),
+    url: String(json.url ?? ''),
   }
 }

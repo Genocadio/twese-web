@@ -52,4 +52,32 @@ export function weightLabel(weightKg: number | null | undefined): string | null 
   return `${Number(weightKg.toFixed(2))} kg`
 }
 
+export function statusLabel(status: string | null | undefined): string {
+  if (!status) return 'Unknown'
+  switch (status) {
+    case 'PENDING':
+      return 'Pending'
+    case 'CONFIRMED':
+      return 'Confirmed'
+    case 'ORIGIN_OFFICE':
+      return 'At Origin Depot'
+    case 'TRANSFER_OFFICE':
+      return 'At Transfer Depot'
+    case 'DESTINATION_OFFICE':
+      return 'At Destination Depot'
+    case 'IN_TRANSIT':
+      return 'In Transit'
+    case 'OUT_FOR_DELIVERY':
+      return 'Out for Delivery'
+    case 'DELIVERED':
+      return 'Delivered'
+    case 'RETURNED':
+      return 'Returned'
+    case 'CANCELLED':
+      return 'Cancelled'
+    default:
+      return status.replace(/_/g, ' ')
+  }
+}
+
 

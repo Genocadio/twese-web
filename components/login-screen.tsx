@@ -2,7 +2,8 @@
 
 import { useState } from 'react'
 import Image from 'next/image'
-import { AlertCircle, Loader2, Lock } from 'lucide-react'
+import Link from 'next/link'
+import { AlertCircle, Loader2, Lock, Search } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useAuth } from '@/lib/auth'
@@ -75,6 +76,16 @@ export function LoginScreen() {
               {busy ? 'Signing in…' : 'Sign in'}
             </Button>
           </form>
+        </div>
+
+        <div className="mt-4 flex flex-col items-center gap-2">
+          <Link
+            href="/track"
+            className="inline-flex items-center gap-2 rounded-xl border border-border bg-card px-4 py-2 text-xs font-semibold text-foreground hover:bg-muted shadow-2xs transition"
+          >
+            <Search className="size-3.5 text-blue-600 dark:text-blue-400" />
+            <span>Track a Package with Code</span>
+          </Link>
         </div>
 
         <p className="mt-6 text-center text-[11px] leading-relaxed text-muted-foreground">

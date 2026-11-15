@@ -3,15 +3,23 @@
 // Nexxauth JWT in the Authorization header (the backend reads the
 // authenticated user + role from the token).
 
+// Gateway single entry point — default to production gateway https://api.gocavgo.com
+// when deployed, or localhost:8080 in local development.
 export const API_URL: string =
-  process.env.NEXT_PUBLIC_API_URL?.replace(/\/+$/, '') || 'http://localhost:8080'
+  process.env.NEXT_PUBLIC_API_URL?.replace(/\/+$/, '') ||
+  (typeof window !== 'undefined' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1'
+    ? 'https://api.gocavgo.com'
+    : 'http://localhost:8080')
 
 // All GraphQL traffic goes through the gateway's /ikuriye namespace.
-// The gateway strips /ikuriye and forwards /graphql to ikuriyebackend.
+// The gateway forwards /ikuriye/graphql to ikuriyebackend.
 export const GRAPHQL_ENDPOINT = `${API_URL}/ikuriye/graphql`
 
 // cavgotrips location search — served by the Go service through the gateway's /navig namespace.
 export const LOCATIONS_URL = `${API_URL}/navig/locations`
+
+// ikuriyebackend multipart file upload endpoint
+export const FILE_UPLOAD_URL = `${API_URL}/ikuriye/api/files/upload`
 
 export interface GraphqlErrorShape {
   message: string
