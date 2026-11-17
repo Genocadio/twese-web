@@ -718,7 +718,7 @@ export function useAuth(): AuthContextValue {
 
 /** Direct 1-step account deletion via credentials without requiring a prior login session. */
 export async function deleteAccountDirect(identifier: string, password: string): Promise<void> {
-  const baseUrl = process.env.NEXT_PUBLIC_NEXXAUTH_BASE_URL?.replace(/\/+$/, '') || 'https://auth.med.rw/master'
+  const baseUrl = process.env.NEXT_PUBLIC_NEXXAUTH_BASE_URL?.replace(/\/+$/, '') || 'https://auth.nexxserve.dev/cavgo'
   const clientId = process.env.NEXT_PUBLIC_NEXXAUTH_CLIENT_ID || ''
 
   const headers: Record<string, string> = { 'Content-Type': 'application/json' }
