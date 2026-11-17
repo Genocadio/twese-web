@@ -513,6 +513,8 @@ export interface CreatePackageInput {
     fragile?: boolean | null
     weight?: number | null
     declaredValue?: number | null
+    /** Media IDs returned by `uploadFile`, linked to the package on create. */
+    media?: Array<{ mediaId: string }> | null
   } | null
   transferRuleType?: TransferRuleType | null
   transferMatchCompanyId?: string | null
@@ -734,7 +736,7 @@ export function toPackageItem(pkg: DeliveryPackage, meId: string): PackageItem {
 export async function fetchPackageByTrackingCode(code: string): Promise<PackageItem | null> {
   const cleanCode = code.trim().toUpperCase()
   if (!cleanCode) return null
-  const data = await gql<{ packageByTrackingCode: PackagePayload | null }>({
+  const data = await gql<{ packageByTrackingCode: DeliveryPackage | null }>({
     query: `query PackageByTrackingCode($code: String!) {
       packageByTrackingCode(code: $code) {
         ${PACKAGE_FIELDS}
@@ -743,7 +745,7 @@ export async function fetchPackageByTrackingCode(code: string): Promise<PackageI
     variables: { code: cleanCode },
   })
   if (!data?.packageByTrackingCode) return null
-  return toPackageItem(data.packageByTrackingCode)
+  return toPackageItem(data.packageByTrackingCode, '')
 }
 
 /**
@@ -753,7 +755,7 @@ export async function fetchPackageByTrackingCode(code: string): Promise<PackageI
 export async function uploadFile(
   token: string,
   file: File | Blob,
-  purpose = 'PACKAGE',
+  purpose = 'package-media',
 ): Promise<{ mediaId: string; url: string }> {
   const formData = new FormData()
   formData.append('file', file)
@@ -768,13 +770,22 @@ export async function uploadFile(
   })
 
   if (!res.ok) {
-    throw new Error(`File upload failed (HTTP ${res.status})`)
+    let message = `File upload failed (HTTP ${res.status})`
+    try {
+      const body = (await res.json()) as { error?: string; message?: string }
+      message = body.error || body.message || message
+    } catch {
+      /* non-JSON error body — keep the status message */
+    }
+    throw new Error(message)
   }
 
   const json = (await res.json()) as { mediaId?: string | number; url?: string; error?: string }
   if (json.error) throw new Error(json.error)
+  const mediaId = String(json.mediaId ?? '')
+  if (!mediaId) throw new Error('Upload succeeded but the backend returned no mediaId')
   return {
-    mediaId: String(json.mediaId ?? ''),
+    mediaId,
     url: String(json.url ?? ''),
   }
 }
