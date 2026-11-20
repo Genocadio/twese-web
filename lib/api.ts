@@ -166,6 +166,7 @@ function toMyCompany(raw: {
   email?: string | null
   phone?: string | null
   office?: RawCompanyOffice | null
+  vehicle?: RawSyncVehicle | null
 } | null): MyCompany | null {
   if (!raw) return null
   return {
@@ -178,6 +179,13 @@ function toMyCompany(raw: {
     email: raw.email ?? null,
     phone: raw.phone ?? null,
     office: toCompanyOffice(raw.office),
+    vehicle: raw.vehicle
+      ? {
+          id: raw.vehicle.id ?? null,
+          licensePlate: raw.vehicle.licensePlate ?? null,
+          serviceType: raw.vehicle.serviceType ?? null,
+        }
+      : null,
   }
 }
 
@@ -195,6 +203,7 @@ function toMyCompanyFromSync(raw: RawSyncResponse | null): MyCompany | null {
     email: user.email,
     phone: user.phone,
     office: raw.company.office,
+    vehicle: raw.company.vehicle ?? null,
   })
 }
 
@@ -208,6 +217,12 @@ interface RawSyncUser {
   status?: string | null
 }
 
+interface RawSyncVehicle {
+  id?: number | string | null
+  licensePlate?: string | null
+  serviceType?: string | null
+}
+
 interface RawSyncCompany {
   companyId?: number | string | null
   companyName?: string | null
@@ -217,6 +232,7 @@ interface RawSyncCompany {
   address?: string | null
   city?: string | null
   office?: RawCompanyOffice | null
+  vehicle?: RawSyncVehicle | null
 }
 
 interface RawSyncAccessRequest {
@@ -354,6 +370,7 @@ export function assignMyOffice(token: string, userId: string, officeId: string):
     email?: string | null
     phone?: string | null
     office?: RawCompanyOffice | null
+    vehicle?: RawSyncVehicle | null
   }>(`/main/staff/${encodeURIComponent(userId)}/office/${encodeURIComponent(officeId)}`, {
     token,
     method: 'PUT',

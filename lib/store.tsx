@@ -60,6 +60,10 @@ interface WorkspaceState {
   secureCodes: Record<string, string>
   /** The worker's currently assigned working office (drives the locked package origin). */
   office: CompanyOffice | null
+  /** Assigned vehicle service type for the current user (PASSENGER|CARGO|PASSENGER_CARGO), if known. */
+  vehicleServiceType: string | null
+  /** Passenger-only vehicles can review trips only and must not perform driver package actions. */
+  isPassengerOnly: boolean
 }
 
 interface WorkspaceActions {
@@ -135,6 +139,8 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
     drivers: [],
     secureCodes: readRecord(SECURE_KEY),
     office: null,
+    vehicleServiceType: null,
+    isPassengerOnly: false,
   })
   const mounted = useRef(true)
   // Pagination cursors for the workspace package list (mirrored in state for
@@ -233,6 +239,8 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
         myTransfers: [],
         drivers: DEMO_DRIVERS,
         office: DEMO_OFFICE,
+        vehicleServiceType: prev.vehicleServiceType ?? null,
+        isPassengerOnly: prev.isPassengerOnly ?? false,
         lastSync: Date.now(),
       }))
       return true
@@ -246,6 +254,8 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
         api.fetchDrivers(token),
         api.fetchMyCompany(token),
       ])
+      const vehicleServiceType = meRes?.vehicle?.serviceType ?? null
+      const isPassengerOnly = String(vehicleServiceType ?? '').toUpperCase() === 'PASSENGER'
       patch({
         offers: offersRes.availablePackages.items,
         pendingTransfers: pendingRes.transfersByStatus,
@@ -253,6 +263,8 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
         myTransfers: mineRes.myTransfers,
         drivers: driversRes.searchUsers,
         office: meRes?.office ?? null,
+        vehicleServiceType,
+        isPassengerOnly,
         lastSync: Date.now(),
       })
       return true
@@ -655,6 +667,14 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
 
   // ── Mutations ────────────────────────────────────────────────────────────
 
+  const ensurePackageActionsAllowed = useCallback(() => {
+    if (stateRef.current.isPassengerOnly) {
+      const err = new Error('Passenger-only vehicles can review trips only and cannot perform package actions.')
+      toast.error(err.message)
+      throw err
+    }
+  }, [])
+
   const runMutation = useCallback(
     async <T,>(fn: () => Promise<T>): Promise<T> => {
       try {
@@ -679,6 +699,7 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
 
   const acceptTransfer = useCallback(
     async (transferId: string, code?: string, opts?: { successMessage?: string }) => {
+      ensurePackageActionsAllowed()
       if (token === 'demo-token') {
         patch((prev) => ({
           pendingTransfers: prev.pendingTransfers.filter((t) => t.id !== transferId),
@@ -701,6 +722,7 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
 
   const claimPackage = useCallback(
     async (packageId: string) => {
+      ensurePackageActionsAllowed()
       if (token === 'demo-token') {
         const offer = state.offers.find((o) => o.id === packageId)
         if (offer) {
@@ -751,6 +773,7 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
 
   const createPackage = useCallback(
     async (input: api.CreatePackageInput) => {
+      ensurePackageActionsAllowed()
       if (token === 'demo-token') {
         const codeNum = Math.floor(100000 + Math.random() * 900000)
         const code = `CAV-${codeNum}`
@@ -823,6 +846,7 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
 
   const assignDriver = useCallback(
     async (packageId: string, driverId: string) => {
+      ensurePackageActionsAllowed()
       if (token === 'demo-token') {
         const driver = state.drivers.find((d) => d.id === driverId)
         const driverName = driver ? `${driver.firstName || ''} ${driver.lastName || ''}`.trim() : 'Assigned Driver'
@@ -857,6 +881,7 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
 
   const advanceStatus = useCallback(
     async (packageId: string, status: PackageStatus, opts?: { notes?: string }) => {
+      ensurePackageActionsAllowed()
       if (token === 'demo-token') {
         patch((prev) => ({
           packages: prev.packages.map((p) => (p.id === packageId ? { ...p, status } : p)),
@@ -866,11 +891,12 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
       }
       await runMutation(() => api.updatePackageStatus(token!, packageId, status, opts?.notes))
     },
-    [token, runMutation, patch],
+    [token, runMutation, patch, ensurePackageActionsAllowed],
   )
 
   const initiateDelivery = useCallback(
     async (packageId: string) => {
+      ensurePackageActionsAllowed()
       if (token === 'demo-token') {
         patch((prev) => ({
           packages: prev.packages.map((p) => (p.id === packageId ? { ...p, status: 'PENDING_CONFIRMATION' } : p)),
@@ -880,11 +906,12 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
       }
       await runMutation(() => api.initiateDelivery(token!, packageId))
     },
-    [token, runMutation, patch],
+    [token, runMutation, patch, ensurePackageActionsAllowed],
   )
 
   const confirmDelivery = useCallback(
     (packageId: string, deliveryCode: string) => {
+      ensurePackageActionsAllowed()
       if (token === 'demo-token') {
         patch((prev) => ({
           packages: prev.packages.map((p) => (p.id === packageId ? { ...p, status: 'DELIVERED' } : p)),
@@ -896,22 +923,24 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
         toast.success('Delivery confirmed')
       })
     },
-    [token, runMutation, patch],
+    [token, runMutation, patch, ensurePackageActionsAllowed],
   )
 
   const regenerateDeliveryCode = useCallback(
     async (packageId: string) => {
+      ensurePackageActionsAllowed()
       if (token === 'demo-token') {
         toast.success('Fresh delivery code generated (demo: 839201)')
         return
       }
       await runMutation(() => api.regenerateDeliveryCode(token!, packageId))
     },
-    [token, runMutation],
+    [token, runMutation, ensurePackageActionsAllowed],
   )
 
   const createTransferForPackages = useCallback(
     async (packageIds: string[], ruleType: TransferRuleType, matchUserId?: string | null) => {
+      ensurePackageActionsAllowed()
       if (token === 'demo-token') {
         toast.success('Transfer created for selected packages')
         return {
@@ -940,11 +969,12 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
       )
       return result.createTransfer
     },
-    [token, runMutation, meId],
+    [token, runMutation, meId, ensurePackageActionsAllowed],
   )
 
   const cancelTransfer = useCallback(
     (transferId: string) => {
+      ensurePackageActionsAllowed()
       if (token === 'demo-token') {
         patch((prev) => ({
           pendingTransfers: prev.pendingTransfers.filter((t) => t.id !== transferId),
@@ -963,11 +993,12 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
         toast.success('Transfer cancelled')
       })
     },
-    [token, runMutation, patch],
+    [token, runMutation, patch, ensurePackageActionsAllowed],
   )
 
   const confirmTransfer = useCallback(
     (transferId: string) => {
+      ensurePackageActionsAllowed()
       if (token === 'demo-token') {
         patch((prev) => ({
           pendingTransfers: prev.pendingTransfers.filter((t) => t.id !== transferId),
@@ -988,11 +1019,12 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
         toast.success('Transfer confirmed — packages accepted')
       })
     },
-    [token, runMutation, patch],
+    [token, runMutation, patch, ensurePackageActionsAllowed],
   )
 
   const rejectTransfer = useCallback(
     (transferId: string) => {
+      ensurePackageActionsAllowed()
       if (token === 'demo-token') {
         patch((prev) => ({
           requestedTransfers: prev.requestedTransfers.filter((t) => t.id !== transferId),
@@ -1011,11 +1043,12 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
         toast.success('Transfer request rejected')
       })
     },
-    [token, runMutation, patch],
+    [token, runMutation, patch, ensurePackageActionsAllowed],
   )
 
   const regenerateTransferCode = useCallback(
     async (transferId: string) => {
+      ensurePackageActionsAllowed()
       if (token === 'demo-token') {
         const code = '654321'
         saveSecureCode(transferId, code)
@@ -1027,7 +1060,7 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
       if (code) saveSecureCode(transferId, code)
       return code ?? ''
     },
-    [token, runMutation, saveSecureCode],
+    [token, runMutation, saveSecureCode, ensurePackageActionsAllowed],
   )
 
   const markRead = useCallback(

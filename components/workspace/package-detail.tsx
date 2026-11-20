@@ -52,6 +52,10 @@ export function PackageDetail({
 }) {
   const { user, token } = useAuth()
   const workspace = useWorkspace()
+  const isPassengerOnly = workspace.isPassengerOnly
+  const effectiveOnDeliver = isPassengerOnly ? undefined : onDeliver
+  const effectiveOnConfirmDelivery = isPassengerOnly ? undefined : onConfirmDelivery
+  const effectiveOnTransferToDriver = isPassengerOnly ? undefined : onTransferToDriver
   const [full, setFull] = useState<PackageItem | null>(null)
   const [busyCancel, setBusyCancel] = useState(false)
   const [copiedCode, setCopiedCode] = useState(false)
@@ -136,31 +140,31 @@ export function PackageDetail({
 
         {/* Quick action buttons & Close */}
         <div className="flex items-center gap-2">
-          {officeDeliver(pkg) && onDeliver && (
+          {officeDeliver(pkg) && effectiveOnDeliver && (
             <Button
               size="sm"
-              onClick={() => onDeliver(pkg)}
+              onClick={() => effectiveOnDeliver(pkg)}
               className="gap-1.5 bg-[#f07c42] font-semibold text-white hover:bg-[#e3743e] interactive-btn"
             >
               <Send className="size-3.5" /> Deliver
             </Button>
           )}
 
-          {awaitingConfirm(pkg) && onConfirmDelivery && (
+          {awaitingConfirm(pkg) && effectiveOnConfirmDelivery && (
             <Button
               size="sm"
-              onClick={() => onConfirmDelivery(pkg)}
+              onClick={() => effectiveOnConfirmDelivery(pkg)}
               className="gap-1.5 bg-[#1f2523] font-semibold text-white hover:bg-[#343b37] interactive-btn"
             >
               <KeyRound className="size-3.5" /> Enter code
             </Button>
           )}
 
-          {canTransfer(pkg) && onTransferToDriver && (
+          {canTransfer(pkg) && effectiveOnTransferToDriver && (
             <Button
               size="sm"
               variant="outline"
-              onClick={() => onTransferToDriver(pkg)}
+              onClick={() => effectiveOnTransferToDriver(pkg)}
               className="gap-1.5 interactive-btn"
             >
               <Truck className="size-3.5" /> Transfer to driver
@@ -340,7 +344,7 @@ export function PackageDetail({
               </div>
             )}
 
-            {t.creatorId === meId && (t.status === 'PENDING' || t.status === 'REQUESTED') && (
+            {!isPassengerOnly && t.creatorId === meId && (t.status === 'PENDING' || t.status === 'REQUESTED') && (
               <div className="mt-3 border-t border-border pt-3">
                 <Button
                   size="sm"

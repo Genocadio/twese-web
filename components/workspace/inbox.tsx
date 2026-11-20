@@ -64,6 +64,7 @@ export function CustodyInbox({
 } = {}) {
   const { user } = useAuth()
   const workspace = useWorkspace()
+  const isPassengerOnly = workspace.isPassengerOnly
   const meId = user?.id ?? ''
   const [internalOpen, setInternalOpen] = useState(false)
   const isOpen = open !== undefined ? open : internalOpen
@@ -250,13 +251,13 @@ export function CustodyInbox({
                                 View packages
                               </Button>
                             )}
-                            {transfer.ruleType === 'AUTO' && (
+                            {!isPassengerOnly && transfer.ruleType === 'AUTO' && (
                               <Button size="sm" className="flex-1 gap-1.5 bg-[#1f2523] text-white hover:bg-[#343b37]" disabled={busyId === transfer.id} onClick={() => void acceptAuto(transfer)}>
                                 {busyId === transfer.id ? <Loader2 className="size-3.5 animate-spin" /> : <Check className="size-3.5" />}
                                 Accept
                               </Button>
                             )}
-                            {transfer.ruleType === 'SECURE' && (
+                            {!isPassengerOnly && transfer.ruleType === 'SECURE' && (
                               <Button
                                 size="sm"
                                 className="flex-1 gap-1.5 bg-[#1f2523] text-white hover:bg-[#343b37]"
@@ -265,7 +266,7 @@ export function CustodyInbox({
                                 <KeyRound className="size-3.5" /> Enter code
                               </Button>
                             )}
-                            {transfer.ruleType === 'CONFIRM' && (
+                            {!isPassengerOnly && transfer.ruleType === 'CONFIRM' && (
                               <Button size="sm" variant="outline" className="flex-1 gap-1.5" disabled={busyId === transfer.id} onClick={() => void requestConfirm(transfer)}>
                                 {busyId === transfer.id && <Loader2 className="size-3.5 animate-spin" />}
                                 Request
@@ -314,7 +315,7 @@ export function CustodyInbox({
                             <Button size="sm" variant="outline" className="flex-1 text-xs" onClick={() => setViewOffer(offer)}>
                               View details
                             </Button>
-                            {activeTransfer && activeTransfer.status === 'PENDING' && activeTransfer.ruleType === 'AUTO' && (
+                            {!isPassengerOnly && activeTransfer && activeTransfer.status === 'PENDING' && activeTransfer.ruleType === 'AUTO' && (
                               <Button
                                 size="sm"
                                 className="flex-1 bg-[#f07c42] text-white hover:bg-[#e3743e]"
@@ -325,7 +326,7 @@ export function CustodyInbox({
                                 Accept
                               </Button>
                             )}
-                            {activeTransfer && activeTransfer.status === 'PENDING' && activeTransfer.ruleType === 'SECURE' && (
+                            {!isPassengerOnly && activeTransfer && activeTransfer.status === 'PENDING' && activeTransfer.ruleType === 'SECURE' && (
                               <Button
                                 size="sm"
                                 className="flex-1 bg-[#f07c42] text-white hover:bg-[#e3743e]"
@@ -334,7 +335,7 @@ export function CustodyInbox({
                                 <KeyRound className="size-3.5" /> Enter code
                               </Button>
                             )}
-                            {activeTransfer && activeTransfer.status === 'PENDING' && activeTransfer.ruleType === 'CONFIRM' && (
+                            {!isPassengerOnly && activeTransfer && activeTransfer.status === 'PENDING' && activeTransfer.ruleType === 'CONFIRM' && (
                               <Button
                                 size="sm"
                                 variant="outline"
@@ -346,7 +347,7 @@ export function CustodyInbox({
                                 Request
                               </Button>
                             )}
-                            {activeTransfer && activeTransfer.status === 'REQUESTED' && (
+                            {!isPassengerOnly && activeTransfer && activeTransfer.status === 'REQUESTED' && (
                               <Badge variant="outline" className="flex-1 items-center justify-center border-violet-200 bg-violet-50 text-[10px] text-violet-700">
                                 Requested
                               </Badge>
@@ -364,7 +365,7 @@ export function CustodyInbox({
       )}
 
       <ConfirmDialog
-        open={Boolean(confirm)}
+        open={!isPassengerOnly && Boolean(confirm)}
         title={confirm?.title ?? ''}
         description={confirm?.description}
         confirmLabel={confirm?.label}
@@ -374,7 +375,7 @@ export function CustodyInbox({
       />
       <CodePromptDialog
         key={codePrompt ? `code-${codePrompt.transfer.id}` : 'none'}
-        open={Boolean(codePrompt)}
+        open={!isPassengerOnly && Boolean(codePrompt)}
         title={codePrompt?.title ?? ''}
         description={codePrompt?.description}
         placeholder="XXXXXXXX"

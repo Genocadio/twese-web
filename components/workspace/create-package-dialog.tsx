@@ -175,6 +175,7 @@ export function CreatePackageDialog({ open, onClose }: { open: boolean; onClose:
   const workspace = useWorkspace()
   const { token } = useAuth()
   const { createPackage, drivers } = workspace
+  const isPassengerOnly = workspace.isPassengerOnly
   const [busy, setBusy] = useState(false)
   // Web always creates FIXED_ROUTE packages (the Android app handles OPEN).
   const deliveryType: DeliveryType = 'FIXED_ROUTE'
@@ -308,6 +309,10 @@ export function CreatePackageDialog({ open, onClose }: { open: boolean; onClose:
   )
 
   async function submit() {
+    if (isPassengerOnly) {
+      toast.error('Passenger-only vehicles can review trips only and cannot create packages.')
+      return
+    }
     if (!valid || busy || !office) return
     if (isUploading) {
       toast.info('Photos are still uploading — please wait a moment')

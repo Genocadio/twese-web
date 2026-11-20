@@ -37,6 +37,14 @@ export interface CompanyOffice {
   placeId: string | null
 }
 
+export type VehicleServiceType = 'PASSENGER' | 'CARGO' | 'PASSENGER_CARGO'
+
+export interface MyCompanyVehicle {
+  id?: string | number | null
+  licensePlate?: string | null
+  serviceType?: VehicleServiceType | string | null
+}
+
 export interface MyCompany {
   id: string
   companyId: string | null
@@ -47,6 +55,7 @@ export interface MyCompany {
   email?: string | null
   phone?: string | null
   office: CompanyOffice | null
+  vehicle?: MyCompanyVehicle | null
 }
 
 export interface CompanyPreview {

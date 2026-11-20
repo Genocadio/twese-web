@@ -99,6 +99,8 @@ export function PackageWorkspace() {
   const [transferItemId, setTransferItemId] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
 
+  const isPassengerOnly = workspace.isPassengerOnly
+
   const officeDeliver = (item: PackageItem) =>
     ['DESTINATION_OFFICE', 'READY_FOR_COLLECTION'].includes(item.status)
   const awaitingConfirm = (item: PackageItem) => item.status === 'PENDING_CONFIRMATION'
@@ -212,32 +214,36 @@ export function PackageWorkspace() {
               )}
             </div>
 
-            {/* New Package Action Button on SAME line */}
-            <Button
-              size="sm"
-              onClick={() => setCreateOpen(true)}
-              className="h-9 shrink-0 gap-1.5 rounded-xl bg-[#1f2523] px-3 text-xs font-semibold text-white shadow-xs hover:bg-[#343b37] interactive-btn"
-              title="Create new package"
-            >
-              <Plus className="size-3.5" />
-              <span className="hidden sm:inline">New</span>
-            </Button>
+            {!isPassengerOnly && (
+              <>
+                {/* New Package Action Button on SAME line */}
+                <Button
+                  size="sm"
+                  onClick={() => setCreateOpen(true)}
+                  className="h-9 shrink-0 gap-1.5 rounded-xl bg-[#1f2523] px-3 text-xs font-semibold text-white shadow-xs hover:bg-[#343b37] interactive-btn"
+                  title="Create new package"
+                >
+                  <Plus className="size-3.5" />
+                  <span className="hidden sm:inline">New</span>
+                </Button>
 
-            {/* Inbox / Transfers Toggle Button on SAME line */}
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => setInboxOpen(true)}
-              className="relative h-9 shrink-0 gap-1.5 rounded-xl px-2.5 text-xs font-medium interactive-btn"
-              title="Open Custody Transfers & Offers"
-            >
-              <Inbox className="size-3.5" />
-              {totalInboxBadge > 0 && (
-                <span className="absolute -right-1 -top-1 grid size-4.5 place-items-center rounded-full bg-[#ef8d54] text-[9px] font-bold text-white shadow-xs">
-                  {totalInboxBadge > 9 ? '9+' : totalInboxBadge}
-                </span>
-              )}
-            </Button>
+                {/* Inbox / Transfers Toggle Button on SAME line */}
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setInboxOpen(true)}
+                  className="relative h-9 shrink-0 gap-1.5 rounded-xl px-2.5 text-xs font-medium interactive-btn"
+                  title="Open Custody Transfers & Offers"
+                >
+                  <Inbox className="size-3.5" />
+                  {totalInboxBadge > 0 && (
+                    <span className="absolute -right-1 -top-1 grid size-4.5 place-items-center rounded-full bg-[#ef8d54] text-[9px] font-bold text-white shadow-xs">
+                      {totalInboxBadge > 9 ? '9+' : totalInboxBadge}
+                    </span>
+                  )}
+                </Button>
+              </>
+            )}
           </div>
 
           {/* Status Filter Pills Row */}
@@ -398,7 +404,7 @@ export function PackageWorkspace() {
                       </button>
                     )}
 
-                    {item.openTransfer && (item.openTransfer.creatorId === meId || item.isMine) && (
+                    {!isPassengerOnly && item.openTransfer && (item.openTransfer.creatorId === meId || item.isMine) && (
                       <button
                         type="button"
                         disabled={busy}
@@ -468,7 +474,31 @@ export function PackageWorkspace() {
           !selectedId ? 'hidden md:flex' : 'flex'
         )}
       >
-        {selected ? (
+        {isPassengerOnly ? (
+          <div className="flex h-full flex-col items-center justify-center p-8 text-center select-none">
+            <div className="relative">
+              <div className="grid size-20 place-items-center rounded-3xl border border-amber-200/80 bg-amber-50/80 shadow-sm dark:border-amber-900/40 dark:bg-amber-950/20">
+                <Truck className="size-9 text-amber-600 dark:text-amber-400" />
+              </div>
+            </div>
+
+            <h2 className="mt-5 text-base font-semibold text-foreground">Passenger-only vehicle assigned</h2>
+            <p className="mt-2 max-w-md text-sm leading-relaxed text-muted-foreground">
+              This account is assigned to a passenger-only vehicle. You can review trips only.
+              Package actions are unavailable: you cannot accept, create, ship, transfer, pick up, deliver, or carry packages.
+            </p>
+            <div className="mt-4 rounded-xl border border-border/70 bg-card/70 px-4 py-3 text-left">
+              <p className="text-xs font-medium text-foreground">What you can do</p>
+              <ul className="mt-2 space-y-1 text-xs text-muted-foreground">
+                <li>• Review trip information available to your account</li>
+                <li>• Use non-package account and notification features</li>
+              </ul>
+            </div>
+            <p className="mt-4 max-w-md text-xs text-muted-foreground/80">
+              Trip review screens are not available in the web workspace yet. If you need to handle packages, use a cargo-capable vehicle assignment.
+            </p>
+          </div>
+        ) : selected ? (
           <PackageDetail
             item={selected}
             onClose={() => setSelectedId(null)}
@@ -522,39 +552,43 @@ export function PackageWorkspace() {
       </main>
 
       {/* Custody Transfers Drawer */}
-      <CustodyInbox open={inboxOpen} onClose={() => setInboxOpen(false)} />
+      <CustodyInbox open={!isPassengerOnly && inboxOpen} onClose={() => setInboxOpen(false)} />
 
       {/* Create Package Dialog */}
-      <CreatePackageDialog open={createOpen} onClose={() => setCreateOpen(false)} />
+      <CreatePackageDialog open={!isPassengerOnly && createOpen} onClose={() => setCreateOpen(false)} />
 
       {/* Quick-row actions dialogs */}
-      <ConfirmDialog
-        open={Boolean(deliverItem)}
-        title={`Deliver ${deliverItem?.trackingCode ?? ''}?`}
-        description="Initiates delivery to the receiver and generates a one-time 6-digit confirmation code. The package moves to “awaiting confirmation”."
-        confirmLabel="Deliver"
-        busy={busy}
-        onConfirm={() => void runQuickDeliver()}
-        onClose={() => setDeliverItem(null)}
-      />
-      <CodePromptDialog
-        key={confirmItem ? `confirm-${confirmItem.id}` : 'none'}
-        open={Boolean(confirmItem)}
-        title={`Enter delivery code for ${confirmItem?.trackingCode ?? ''}`}
-        description="The receiver was sent the delivery code in their app — they should share it with you, or confirm delivery themselves."
-        placeholder="000000"
-        confirmLabel="Confirm delivery"
-        busy={busy}
-        onConfirm={(code) => void runQuickConfirm(code)}
-        onClose={() => setConfirmItem(null)}
-      />
-      <DriverPickerDialog
-        open={Boolean(transferItemId)}
-        title="Transfer to a driver"
-        description="A transfer will be created for the selected driver to pick up the package."
-        onConfirm={(driverId) => runQuickTransfer(driverId)}
-        onClose={() => setTransferItemId(null)}
-      />
+      {!isPassengerOnly && (
+        <>
+          <ConfirmDialog
+            open={Boolean(deliverItem)}
+            title={`Deliver ${deliverItem?.trackingCode ?? ''}?`}
+            description="Initiates delivery to the receiver and generates a one-time 6-digit confirmation code. The package moves to “awaiting confirmation”."
+            confirmLabel="Deliver"
+            busy={busy}
+            onConfirm={() => void runQuickDeliver()}
+            onClose={() => setDeliverItem(null)}
+          />
+          <CodePromptDialog
+            key={confirmItem ? `confirm-${confirmItem.id}` : 'none'}
+            open={Boolean(confirmItem)}
+            title={`Enter delivery code for ${confirmItem?.trackingCode ?? ''}`}
+            description="The receiver was sent the delivery code in their app — they should share it with you, or confirm delivery themselves."
+            placeholder="000000"
+            confirmLabel="Confirm delivery"
+            busy={busy}
+            onConfirm={(code) => void runQuickConfirm(code)}
+            onClose={() => setConfirmItem(null)}
+          />
+          <DriverPickerDialog
+            open={Boolean(transferItemId)}
+            title="Transfer to a driver"
+            description="A transfer will be created for the selected driver to pick up the package."
+            onConfirm={(driverId) => runQuickTransfer(driverId)}
+            onClose={() => setTransferItemId(null)}
+          />
+        </>
+      )}
     </div>
   )
 }
