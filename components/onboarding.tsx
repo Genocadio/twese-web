@@ -79,7 +79,7 @@ function OnboardingShell({
         <div className="mb-8 flex flex-col items-center text-center">
           <Image src="/logo.png" width={72} height={72} alt="Twese" className="size-16 object-contain drop-shadow-md" priority />
           <p className="mt-4 font-mono text-xl font-bold tracking-tight">TWESE</p>
-          <p className="mt-1 text-xs uppercase tracking-[0.25em] text-muted-foreground">Worker console</p>
+          <p className="mt-1 text-xs uppercase tracking-[0.2em] text-muted-foreground">Package Delivery &amp; Tracking</p>
           {user && (
             <p className="mt-3 text-xs text-muted-foreground">
               Signed in as <span className="font-semibold text-foreground">{user.email}</span>
@@ -90,7 +90,7 @@ function OnboardingShell({
         <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">{children}</div>
 
         <div className="mt-6 flex justify-center">
-          <Button variant="outline" className="h-9 gap-2 text-xs" onClick={logout}>
+          <Button variant="outline" className="h-11 gap-2 text-sm" onClick={logout}>
             <LogOut className="size-3.5" /> Log out
           </Button>
         </div>
@@ -201,7 +201,7 @@ function JoinCompanyScreen({
               value={code}
               onChange={(event) => setCode(event.target.value.toUpperCase())}
               placeholder="e.g. TWESE-001"
-              className="h-10 font-mono text-sm uppercase"
+              className="h-12 font-mono text-base uppercase"
               autoFocus
               disabled={checking}
             />
@@ -212,7 +212,7 @@ function JoinCompanyScreen({
           <Button
             type="submit"
             disabled={checking || !code.trim()}
-            className="mt-1 h-10 gap-2 bg-[#1f2523] text-white hover:bg-[#343b37]"
+            className="mt-1 h-12 gap-2 bg-[#1f2523] text-white hover:bg-[#343b37] active:scale-[0.98]"
           >
             {checking ? <Loader2 className="size-4 animate-spin" /> : <ArrowRight className="size-4" />}
             {checking ? 'Checking…' : 'Continue'}
@@ -247,7 +247,7 @@ function JoinCompanyScreen({
           <Button
             disabled={onboarding.busy}
             onClick={() => void onboarding.requestAccess(code)}
-            className="h-10 w-full gap-2 bg-[#1f2523] text-white hover:bg-[#343b37]"
+            className="h-12 w-full gap-2 bg-[#1f2523] text-white hover:bg-[#343b37] active:scale-[0.98]"
           >
             {onboarding.busy ? (
               <Loader2 className="size-4 animate-spin" />
@@ -256,7 +256,7 @@ function JoinCompanyScreen({
             )}
             {onboarding.busy ? 'Submitting…' : 'Request access'}
           </Button>
-          <Button variant="ghost" className="h-9 w-full gap-1.5 text-xs" onClick={resetCode}>
+          <Button variant="ghost" className="h-11 w-full gap-1.5 text-sm" onClick={resetCode}>
             <ArrowLeft className="size-3.5" /> Enter a different code
           </Button>
         </div>

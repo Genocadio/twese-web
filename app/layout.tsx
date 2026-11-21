@@ -4,8 +4,8 @@ import './globals.css'
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_TWESE_URL || 'https://twese.gocavgo.com'),
-  title: 'Twese Worker Console',
-  description: 'A focused package custody workspace for intake, handoffs, and route progress.',
+  title: 'Twese | Package Delivery & Tracking',
+  description: 'Track packages, manage deliveries, and follow route progress with Twese.',
   icons: {
     icon: [
       {
@@ -36,6 +36,9 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   colorScheme: 'light dark',
+  viewportFit: 'cover',
+  width: 'device-width',
+  initialScale: 1,
   themeColor: [
     { media: '(prefers-color-scheme: light)', color: 'white' },
     { media: '(prefers-color-scheme: dark)', color: 'black' },

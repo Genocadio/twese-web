@@ -156,7 +156,7 @@ export function WorkerShell({ children }: { children: React.ReactNode }) {
   const unread = workspace.unread
   return (
     <OnboardingGate>
-      <div className="flex h-dvh flex-col overflow-hidden bg-background text-foreground">
+      <div className="flex h-dvh flex-col overflow-hidden bg-background text-foreground pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]">
       <ToastContainer position="top-right" autoClose={3200} newestOnTop theme="light" toastClassName="font-sans text-sm" />
       <header className="z-20 flex h-14 shrink-0 items-center justify-between border-b border-border bg-background/95 px-4 backdrop-blur sm:px-6">
         <Link href="/" className="group flex shrink-0 items-center gap-2.5 transition-transform duration-150 hover:scale-[1.02]" aria-label="Twese packages">
@@ -170,7 +170,7 @@ export function WorkerShell({ children }: { children: React.ReactNode }) {
         <div className="flex items-center gap-2 sm:gap-2.5">
           <div ref={noticeRef} className="relative">
             <button
-              className="relative grid size-8.5 place-items-center rounded-full border border-border bg-card text-muted-foreground transition-all duration-150 hover:-translate-y-0.5 hover:bg-muted hover:text-foreground hover:shadow-xs active:translate-y-0 active:scale-95 cursor-pointer"
+              className="relative grid size-11 place-items-center rounded-full border border-border bg-card text-muted-foreground transition-all duration-150 hover:-translate-y-0.5 hover:bg-muted hover:text-foreground hover:shadow-xs active:translate-y-0 active:scale-95 cursor-pointer"
               aria-label="Notifications"
               aria-expanded={noticeOpen}
               onClick={() => {
@@ -180,7 +180,7 @@ export function WorkerShell({ children }: { children: React.ReactNode }) {
             >
               <Bell className="size-4" />
               {unread > 0 && (
-                <span className="absolute -right-0.5 -top-0.5 grid size-4 place-items-center rounded-full bg-[#ef8d54] text-[9px] font-bold text-white shadow-xs">
+                <span className="absolute -right-0.5 -top-0.5 grid size-5 place-items-center rounded-full bg-[#ef8d54] text-[10px] font-bold text-white shadow-xs">
                   {unread > 9 ? '9+' : unread}
                 </span>
               )}
@@ -196,9 +196,9 @@ export function WorkerShell({ children }: { children: React.ReactNode }) {
                     {unread > 0 && (
                       <button
                         onClick={() => void workspace.markAllRead()}
-                        className="flex items-center gap-1 text-[10px] font-medium text-muted-foreground hover:text-foreground cursor-pointer"
+                        className="flex min-h-8 items-center gap-1 text-xs font-medium text-muted-foreground hover:text-foreground cursor-pointer"
                       >
-                        <CheckCheck className="size-3" /> Mark all read
+                        <CheckCheck className="size-3.5" /> Mark all read
                       </button>
                     )}
                   </div>
@@ -213,13 +213,13 @@ export function WorkerShell({ children }: { children: React.ReactNode }) {
                         onClick={() => {
                           if (!notice.viewer.readAt) void workspace.markRead(notice.viewer.id)
                         }}
-                        className="flex w-full gap-3 rounded-xl p-3 text-left transition-colors hover:bg-muted cursor-pointer"
+                        className="flex w-full gap-3 rounded-xl p-3 text-left transition-colors hover:bg-muted cursor-pointer active:bg-muted/70"
                       >
-                        <span className={cn('mt-1.5 size-2 shrink-0 rounded-full', notice.viewer.readAt ? 'bg-muted-foreground/40' : 'bg-[#ef8d54]')} />
+                        <span className={cn('mt-2 size-2 shrink-0 rounded-full', notice.viewer.readAt ? 'bg-muted-foreground/40' : 'bg-[#ef8d54]')} />
                         <span>
-                          <span className={cn('block text-xs', !notice.viewer.readAt && 'font-semibold')}>{notice.title}</span>
-                          <span className="mt-1 block text-[11px] leading-relaxed text-muted-foreground">{notice.message}</span>
-                          <span className="mt-1 block font-mono text-[9px] uppercase tracking-wide text-muted-foreground">
+                          <span className={cn('block text-sm', !notice.viewer.readAt && 'font-semibold')}>{notice.title}</span>
+                          <span className="mt-1 block text-xs leading-relaxed text-muted-foreground">{notice.message}</span>
+                          <span className="mt-1 block font-mono text-[10px] uppercase tracking-wide text-muted-foreground">
                             {notice.eventType} · {timeAgo(notice.createdAt)}
                           </span>
                         </span>
@@ -233,7 +233,7 @@ export function WorkerShell({ children }: { children: React.ReactNode }) {
 
           <div ref={profileRef} className="relative">
             <button
-              className="flex items-center gap-1.5 rounded-full border border-border bg-card p-0.5 pr-2 transition-all duration-150 hover:-translate-y-0.5 hover:shadow-xs active:translate-y-0 active:scale-95 cursor-pointer"
+              className="flex min-h-11 items-center gap-1.5 rounded-full border border-border bg-card p-1 pl-1.5 pr-2.5 transition-all duration-150 hover:-translate-y-0.5 hover:shadow-xs active:translate-y-0 active:scale-95 cursor-pointer"
               aria-label="Open profile menu"
               aria-expanded={profileOpen}
               onClick={() => {
@@ -241,7 +241,7 @@ export function WorkerShell({ children }: { children: React.ReactNode }) {
                 setNoticeOpen(false)
               }}
             >
-              <span className="grid size-7.5 place-items-center rounded-full bg-[#d9e4dc] text-xs font-semibold text-[#31403a]">
+              <span className="grid size-9 place-items-center rounded-full bg-[#d9e4dc] text-sm font-semibold text-[#31403a]">
                 {initials(name)}
               </span>
               <ChevronDown className="hidden size-3.5 text-muted-foreground sm:block" />
@@ -257,18 +257,18 @@ export function WorkerShell({ children }: { children: React.ReactNode }) {
                 </div>
                 <button
                   onClick={() => void workspace.refresh()}
-                  className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-xs transition-colors hover:bg-muted cursor-pointer"
+                  className="flex w-full items-center gap-2 rounded-lg px-3 py-2.5 text-sm transition-colors hover:bg-muted cursor-pointer"
                 >
-                  <RefreshCcw className="size-3.5" /> Refresh data
+                  <RefreshCcw className="size-4" /> Refresh data
                 </button>
                 <button
                   onClick={() => {
                     setProfileOpen(false)
                     logout()
                   }}
-                  className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-xs text-destructive transition-colors hover:bg-muted cursor-pointer"
+                  className="flex w-full items-center gap-2 rounded-lg px-3 py-2.5 text-sm text-destructive transition-colors hover:bg-muted cursor-pointer"
                 >
-                  <LogOut className="size-3.5" /> Log out
+                  <LogOut className="size-4" /> Log out
                 </button>
                 <div className="my-1 border-t border-border" />
                 <button
@@ -277,9 +277,9 @@ export function WorkerShell({ children }: { children: React.ReactNode }) {
                     setDeleteError(null)
                     setConfirmDelete(true)
                   }}
-                  className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-xs text-red-600 transition-colors hover:bg-red-50 dark:hover:bg-red-950/20 cursor-pointer"
+                  className="flex w-full items-center gap-2 rounded-lg px-3 py-2.5 text-sm text-red-600 transition-colors hover:bg-red-50 dark:hover:bg-red-950/20 cursor-pointer"
                 >
-                  <Trash2 className="size-3.5" /> Delete account
+                  <Trash2 className="size-4" /> Delete account
                 </button>
               </div>
             )}
@@ -316,7 +316,7 @@ export function WorkerShell({ children }: { children: React.ReactNode }) {
                 variant="outline"
                 disabled={deleting}
                 onClick={() => setConfirmDelete(false)}
-                className="h-9 px-4 text-xs"
+                className="h-11 px-4 text-sm"
               >
                 Cancel
               </Button>
@@ -334,7 +334,7 @@ export function WorkerShell({ children }: { children: React.ReactNode }) {
                     setDeleting(false)
                   }
                 }}
-                className="h-9 gap-1.5 bg-red-600 text-white hover:bg-red-700 dark:bg-red-600 dark:hover:bg-red-700 text-xs font-semibold"
+                className="h-11 gap-1.5 bg-red-600 text-white hover:bg-red-700 dark:bg-red-600 dark:hover:bg-red-700 text-sm font-semibold"
               >
                 {deleting && <Loader2 className="size-3.5 animate-spin" />}
                 {deleting ? 'Deleting…' : 'Permanently Delete'}

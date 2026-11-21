@@ -128,7 +128,7 @@ function LocationSuggestionInput({
           type="text"
           value={value}
           placeholder={placeholder}
-          className={`flex h-9 w-full rounded-xl border border-border bg-transparent px-3 py-1 text-xs shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#f07c42] disabled:cursor-not-allowed disabled:opacity-50 ${icon ? 'pl-9' : ''}`}
+          className={`flex h-11 w-full rounded-xl border border-border bg-transparent px-3 py-1 text-base shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#f07c42] disabled:cursor-not-allowed disabled:opacity-50 sm:h-9 sm:text-sm ${icon ? 'pl-10 sm:pl-9' : ''}`}
           onFocus={() => setShowDropdown(true)}
           onChange={(e) => {
             onChange(e.target.value)
@@ -409,7 +409,7 @@ export function CreatePackageDialog({ open, onClose }: { open: boolean; onClose:
                     value={office ? officeLocationName(office) : 'Loading office…'}
                     readOnly
                     disabled={!office}
-                    className="pl-9 text-xs"
+                    className="pl-10 text-base sm:pl-9 sm:text-sm"
                   />
                 </div>
                 {office && (

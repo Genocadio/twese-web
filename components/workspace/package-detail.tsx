@@ -113,10 +113,10 @@ export function PackageDetail({
           {/* Back button for mobile view */}
           <button
             onClick={onClose}
-            className="grid size-8 place-items-center rounded-lg border border-border text-muted-foreground transition-all hover:bg-muted hover:text-foreground md:hidden cursor-pointer"
+            className="grid size-11 place-items-center rounded-lg border border-border text-muted-foreground transition-all hover:bg-muted hover:text-foreground active:scale-95 md:hidden cursor-pointer"
             aria-label="Back to packages"
           >
-            <ChevronLeft className="size-4" />
+            <ChevronLeft className="size-5" />
           </button>
 
           <div>
@@ -128,18 +128,18 @@ export function PackageDetail({
                 type="button"
                 onClick={copyTrackingCode}
                 title="Copy tracking code"
-                className="grid size-7 place-items-center rounded-md text-muted-foreground transition-all hover:bg-muted hover:text-foreground cursor-pointer"
+                className="grid size-9 place-items-center rounded-md text-muted-foreground transition-all hover:bg-muted hover:text-foreground active:scale-95 cursor-pointer"
               >
-                {copiedCode ? <Check className="size-3.5 text-emerald-600" /> : <Copy className="size-3.5" />}
+                {copiedCode ? <Check className="size-4 text-emerald-600" /> : <Copy className="size-4" />}
               </button>
-              <Badge variant="outline" className={cn('text-[11px] font-semibold', statusClass(pkg.status))}>
+              <Badge variant="outline" className={cn('text-xs font-semibold', statusClass(pkg.status))}>
                 {statusLabel(pkg.status)}
               </Badge>
               <Badge variant="outline" className="hidden font-mono text-[10px] uppercase text-muted-foreground sm:inline-flex">
                 {pkg.deliveryType}
               </Badge>
             </div>
-            <p className="mt-0.5 truncate text-xs text-muted-foreground">
+            <p className="mt-0.5 truncate text-sm text-muted-foreground">
               {pkg.receiver} · {pkg.origin} → {pkg.destination}
             </p>
           </div>
@@ -149,49 +149,45 @@ export function PackageDetail({
         <div className="flex items-center gap-2">
           {officeDeliver(pkg) && effectiveOnDeliver && (
             <Button
-              size="sm"
               onClick={() => effectiveOnDeliver(pkg)}
-              className="gap-1.5 bg-[#f07c42] font-semibold text-white hover:bg-[#e3743e] interactive-btn"
+              className="h-11 gap-2 bg-[#f07c42] text-sm font-semibold text-white hover:bg-[#e3743e] active:scale-[0.98] interactive-btn"
             >
-              <Send className="size-3.5" /> Deliver
+              <Send className="size-4" /> Deliver
             </Button>
           )}
 
           {awaitingConfirm(pkg) && effectiveOnConfirmDelivery && (
             <Button
-              size="sm"
               onClick={() => effectiveOnConfirmDelivery(pkg)}
-              className="gap-1.5 bg-[#1f2523] font-semibold text-white hover:bg-[#343b37] interactive-btn"
+              className="h-11 gap-2 bg-[#1f2523] text-sm font-semibold text-white hover:bg-[#343b37] active:scale-[0.98] interactive-btn"
             >
-              <KeyRound className="size-3.5" /> Enter code
+              <KeyRound className="size-4" /> Enter code
             </Button>
           )}
 
           {canTransfer(pkg) && effectiveOnTransferToDriver && (
             <Button
-              size="sm"
               variant="outline"
               onClick={() => effectiveOnTransferToDriver(pkg)}
-              className="gap-1.5 interactive-btn"
+              className="h-11 gap-2 text-sm active:scale-[0.98] interactive-btn"
             >
-              <Truck className="size-3.5" /> Transfer to driver
+              <Truck className="size-4" /> Transfer to driver
             </Button>
           )}
 
           <Button
-            size="sm"
             variant="outline"
             onClick={shareTrackingOnWhatsApp}
             disabled={!pkg.trackingCode}
             title="Share tracking link on WhatsApp"
-            className="gap-1.5 interactive-btn"
+            className="h-11 gap-2 text-sm active:scale-[0.98] interactive-btn"
           >
-            <MessageCircle className="size-3.5" /> Share Tracking
+            <MessageCircle className="size-4" /> Share Tracking
           </Button>
 
           <button
             onClick={onClose}
-            className="grid size-8 place-items-center rounded-lg border border-border/80 text-muted-foreground transition-all hover:bg-muted hover:text-foreground cursor-pointer"
+            className="grid size-10 place-items-center rounded-lg border border-border/80 text-muted-foreground transition-all hover:bg-muted hover:text-foreground active:scale-95 cursor-pointer"
             aria-label="Close package view"
             title="Close (Esc)"
           >
@@ -204,7 +200,7 @@ export function PackageDetail({
       <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4">
         {/* Route Card */}
         <div className="rounded-2xl border border-border bg-card p-4 shadow-2xs">
-          <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Route & Handover</p>
+          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Route & Handover</p>
           <div className="mt-3 grid gap-3 sm:grid-cols-2">
             <div className="flex items-start gap-3 rounded-xl border border-border/70 bg-muted/20 p-3">
               <div className="mt-0.5 grid size-6 shrink-0 place-items-center rounded-full bg-emerald-500/10 text-emerald-600">
@@ -233,7 +229,7 @@ export function PackageDetail({
         {/* Sender & Receiver Card */}
         <div className="grid gap-3 sm:grid-cols-2">
           <div className="rounded-2xl border border-border bg-card p-4 shadow-2xs">
-            <div className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+            <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               <User className="size-3.5" /> Sender Information
             </div>
             <p className="mt-2 text-sm font-semibold">{pkg.sender}</p>
@@ -241,7 +237,7 @@ export function PackageDetail({
           </div>
 
           <div className="rounded-2xl border border-border bg-card p-4 shadow-2xs">
-            <div className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+            <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               <UserRound className="size-3.5" /> Recipient Information
             </div>
             <p className="mt-2 text-sm font-semibold">{pkg.receiver}</p>
@@ -251,7 +247,7 @@ export function PackageDetail({
 
         {/* Package Specifications Card */}
         <div className="rounded-2xl border border-border bg-card p-4 shadow-2xs">
-          <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Package Details</p>
+          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Package Details</p>
           <div className="mt-3 flex flex-wrap gap-2">
             {pkg.weight && (
               <Badge variant="outline" className="border-border bg-muted/40 text-xs font-medium">
@@ -281,7 +277,7 @@ export function PackageDetail({
 
           {pkg.photos.length > 0 && (
             <div className="mt-4">
-              <p className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+              <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                 Attached Photos ({pkg.photos.length})
               </p>
               <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3">
@@ -311,7 +307,7 @@ export function PackageDetail({
         {t && (
           <div className="rounded-2xl border border-border bg-card p-4 shadow-2xs">
             <div className="flex items-center justify-between">
-              <p className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+              <p className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                 <ShieldCheck className="size-3.5 text-primary" /> Active Transfer Handover
               </p>
               <Badge variant="outline" className={cn('text-[10px] font-semibold', RULE_TONE[t.ruleType])}>
@@ -389,7 +385,7 @@ export function PackageDetail({
 
         {/* Current Custody Card */}
         <div className="rounded-2xl border border-border bg-card p-4 shadow-2xs">
-          <p className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+          <p className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
             <UserRound className="size-3.5" /> Physical Custody
           </p>
           <div className="mt-2.5 flex items-center justify-between rounded-xl border border-border/80 bg-muted/30 p-3">
@@ -404,7 +400,7 @@ export function PackageDetail({
         {/* Custody Trail */}
         {pkg.custody.length > 0 && (
           <div className="rounded-2xl border border-border bg-card p-4 shadow-2xs">
-            <p className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+            <p className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               <ArrowRight className="size-3.5" /> Chain of Custody Trail ({pkg.custody.length})
             </p>
             <div className="mt-3 flex flex-col gap-2.5">
@@ -426,7 +422,7 @@ export function PackageDetail({
         {/* Timeline Log */}
         {pkg.events.length > 0 && (
           <div className="rounded-2xl border border-border bg-card p-4 shadow-2xs">
-            <p className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+            <p className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               <Clock3 className="size-3.5" /> Events Timeline ({pkg.events.length})
             </p>
             <div className="mt-3 flex flex-col gap-2">

@@ -200,7 +200,7 @@ export function PackageWorkspace() {
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
                 placeholder="Search packages, recipient, code…"
-                className="h-9 w-full rounded-xl bg-background pl-8.5 pr-8 text-xs placeholder:text-muted-foreground/75 focus-visible:ring-1 focus-visible:ring-primary"
+                className="h-11 w-full rounded-xl bg-background pl-9 pr-9 text-base placeholder:text-muted-foreground/75 focus-visible:ring-1 focus-visible:ring-primary sm:h-9 sm:pl-8.5 sm:pr-8 sm:text-sm"
               />
               {query && (
                 <button
@@ -220,7 +220,7 @@ export function PackageWorkspace() {
                 <Button
                   size="sm"
                   onClick={() => setCreateOpen(true)}
-                  className="h-9 shrink-0 gap-1.5 rounded-xl bg-[#1f2523] px-3 text-xs font-semibold text-white shadow-xs hover:bg-[#343b37] interactive-btn"
+                  className="h-11 shrink-0 gap-1.5 rounded-xl bg-[#1f2523] px-3.5 text-sm font-semibold text-white shadow-xs hover:bg-[#343b37] active:scale-[0.98] interactive-btn sm:h-9 sm:text-xs"
                   title="Create new package"
                 >
                   <Plus className="size-3.5" />
@@ -232,7 +232,7 @@ export function PackageWorkspace() {
                   size="sm"
                   variant="outline"
                   onClick={() => setInboxOpen(true)}
-                  className="relative h-9 shrink-0 gap-1.5 rounded-xl px-2.5 text-xs font-medium interactive-btn"
+                  className="relative h-11 shrink-0 gap-1.5 rounded-xl px-3 text-sm font-medium active:scale-[0.98] interactive-btn sm:h-9 sm:px-2.5 sm:text-xs"
                   title="Open Custody Transfers & Offers"
                 >
                   <Inbox className="size-3.5" />
@@ -256,7 +256,7 @@ export function PackageWorkspace() {
                   type="button"
                   onClick={() => setFilter(tab.key)}
                   className={cn(
-                    'flex shrink-0 items-center gap-1.5 rounded-lg px-2.5 py-1 text-[11px] font-medium transition-all cursor-pointer',
+                    'flex min-h-10 shrink-0 items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-medium transition-all cursor-pointer active:scale-[0.98] sm:min-h-0 sm:px-2.5 sm:py-1 sm:text-[11px]',
                     active
                       ? 'bg-[#1f2523] text-white shadow-xs dark:bg-primary dark:text-primary-foreground'
                       : 'bg-muted/60 text-muted-foreground hover:bg-muted hover:text-foreground interactive-tap'
@@ -318,7 +318,7 @@ export function PackageWorkspace() {
                     }
                   }}
                   className={cn(
-                    'group relative flex w-full flex-col gap-1.5 p-3.5 text-left transition-all duration-150 cursor-pointer',
+                    'group relative flex min-h-20 w-full flex-col gap-1.5 p-3.5 text-left transition-all duration-150 cursor-pointer active:bg-muted/70',
                     isSelected
                       ? 'bg-primary/5 dark:bg-primary/10 border-l-[3.5px] border-l-[#1f2523] dark:border-l-primary shadow-2xs'
                       : 'border-l-[3.5px] border-l-transparent hover:bg-muted/50 interactive-card'
@@ -327,37 +327,37 @@ export function PackageWorkspace() {
                   {/* Top Line: Tracking code, status badge, time */}
                   <div className="flex items-center justify-between gap-2">
                     <div className="flex min-w-0 items-center gap-1.5">
-                      <PackageCheck className={cn('size-3.5 shrink-0', isSelected ? 'text-primary' : 'text-muted-foreground')} />
-                      <span className="font-mono text-xs font-bold tracking-tight text-foreground">
+                      <PackageCheck className={cn('size-4 shrink-0', isSelected ? 'text-primary' : 'text-muted-foreground')} />
+                      <span className="font-mono text-sm font-bold tracking-tight text-foreground">
                         {item.trackingCode}
                       </span>
                     </div>
 
                     <div className="flex items-center gap-1.5 shrink-0">
-                      <Badge variant="outline" className={cn('text-[9px] font-semibold', statusClass(item.status))}>
+                      <Badge variant="outline" className={cn('text-[10px] font-semibold', statusClass(item.status))}>
                         {statusLabel(item.status)}
                       </Badge>
-                      <span className="font-mono text-[10px] text-muted-foreground">{timeAgo(item.updatedAt)}</span>
+                      <span className="font-mono text-xs text-muted-foreground">{timeAgo(item.updatedAt)}</span>
                     </div>
                   </div>
 
                   {/* Route line */}
-                  <p className="truncate text-xs text-foreground/90 font-medium">
+                  <p className="truncate text-sm text-foreground/90 font-medium">
                     {item.receiver} <span className="text-muted-foreground font-normal">· {item.origin} → {item.destination}</span>
                   </p>
 
                   {/* Custody info + tags */}
-                  <div className="flex flex-wrap items-center gap-1.5 text-[10px] text-muted-foreground">
+                  <div className="flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
                     <span className="truncate">
                       {item.currentCustodian ? `${item.currentCustodian.name} (${item.currentCustodian.role})` : 'No custodian'}
                     </span>
                     {item.fragile && (
-                      <span className="rounded bg-amber-50 px-1 py-0.2 text-[9px] font-semibold text-amber-700 dark:bg-amber-950/40 dark:text-amber-300">
+                      <span className="rounded bg-amber-50 px-1.5 py-0.5 text-[10px] font-semibold text-amber-700 dark:bg-amber-950/40 dark:text-amber-300">
                         Fragile
                       </span>
                     )}
                     {item.openTransfer && (
-                      <span className="rounded bg-violet-50 px-1 py-0.2 text-[9px] font-semibold text-violet-700 dark:bg-violet-950/40 dark:text-violet-300">
+                      <span className="rounded bg-violet-50 px-1.5 py-0.5 text-[10px] font-semibold text-violet-700 dark:bg-violet-950/40 dark:text-violet-300">
                         Transfer pending
                       </span>
                     )}
@@ -520,30 +520,28 @@ export function PackageWorkspace() {
             </div>
 
             <h2 className="mt-5 text-base font-semibold text-foreground">Twese Worker Workspace</h2>
-            <p className="mt-1.5 max-w-sm text-xs leading-relaxed text-muted-foreground">
+            <p className="mt-1.5 max-w-sm text-sm leading-relaxed text-muted-foreground">
               Select a package from the list to view route details, transfer history, and manage handovers
               while keeping the list active.
             </p>
 
             <div className="mt-6 flex flex-wrap items-center justify-center gap-2.5">
               <Button
-                size="sm"
                 onClick={() => setCreateOpen(true)}
-                className="gap-1.5 rounded-xl bg-[#1f2523] px-3.5 text-xs font-semibold text-white shadow-xs hover:bg-[#343b37] interactive-btn"
+                className="h-11 gap-2 rounded-xl bg-[#1f2523] px-4 text-sm font-semibold text-white shadow-xs hover:bg-[#343b37] active:scale-[0.98] interactive-btn"
               >
-                <Plus className="size-3.5" /> New package
+                <Plus className="size-4" /> New package
               </Button>
               <Button
-                size="sm"
                 variant="outline"
                 onClick={() => setInboxOpen(true)}
-                className="gap-1.5 rounded-xl px-3.5 text-xs font-medium interactive-btn"
+                className="h-11 gap-2 rounded-xl px-4 text-sm font-medium active:scale-[0.98] interactive-btn"
               >
-                <Inbox className="size-3.5" /> Open transfers inbox
+                <Inbox className="size-4" /> Open transfers inbox
               </Button>
             </div>
 
-            <div className="mt-8 flex items-center gap-2 text-[11px] text-muted-foreground/75">
+            <div className="mt-8 flex items-center gap-2 text-xs text-muted-foreground/75">
               <span className="size-2 rounded-full bg-emerald-500 animate-pulse" />
               <span>Real-time delivery synchronization active</span>
             </div>

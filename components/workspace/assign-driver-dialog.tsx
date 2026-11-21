@@ -66,7 +66,7 @@ export function AssignDriverDialog({
             <p className="mb-2 text-xs font-medium text-muted-foreground">Drivers</p>
             <div className="relative mb-2">
               <Search className="absolute left-3 top-2.5 size-4 text-muted-foreground" />
-              <Input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search drivers…" className="h-9 pl-9" />
+              <Input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search drivers…" className="h-11 pl-10 sm:h-9 sm:pl-9" />
             </div>
             <div className="max-h-48 overflow-y-auto rounded-xl border border-border">
               {filtered.length === 0 ? (
