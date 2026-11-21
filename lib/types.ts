@@ -164,6 +164,23 @@ export interface PackageCustody {
   notes: string | null
 }
 
+/** Privacy-safe projection exposed through the public share link. */
+export interface PublicTrackingEvent {
+  eventType: string
+  createdAt: string
+}
+
+export interface PublicTracking {
+  trackingCode: string
+  deliveryType: DeliveryType
+  status: PackageStatus
+  origin: string
+  destination: string
+  createdAt: string
+  updatedAt: string
+  events: PublicTrackingEvent[]
+}
+
 export interface TransferPackageLink {
   id: string
   transferId: string

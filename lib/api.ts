@@ -11,6 +11,7 @@ import type {
   PackageCreation,
   PackageItem,
   PackageStatus,
+  PublicTracking,
   SortOrder,
   Transfer,
   TransferAcceptResult,
@@ -747,22 +748,30 @@ export function toPackageItem(pkg: DeliveryPackage, meId: string): PackageItem {
 }
 
 /**
- * Public client tracking query — fetch package by human tracking code (e.g. CAV-123456).
+ * Public client tracking query for shareable links.
+ * Uses the privacy-safe projection — no phones, names, exact coordinates,
+ * declared value, media, custodians, company/trip ids or delivery codes.
  * No authentication required by ikuriyebackend.
  */
-export async function fetchPackageByTrackingCode(code: string): Promise<PackageItem | null> {
+export async function fetchPublicTracking(code: string): Promise<PublicTracking | null> {
   const cleanCode = code.trim().toUpperCase()
   if (!cleanCode) return null
-  const data = await gql<{ packageByTrackingCode: DeliveryPackage | null }>({
-    query: `query PackageByTrackingCode($code: String!) {
-      packageByTrackingCode(code: $code) {
-        ${PACKAGE_FIELDS}
+  const data = await gql<{ publicTracking: PublicTracking | null }>({
+    query: `query PublicTracking($code: String!) {
+      publicTracking(code: $code) {
+        trackingCode
+        deliveryType
+        status
+        origin
+        destination
+        createdAt
+        updatedAt
+        events { eventType createdAt }
       }
     }`,
     variables: { code: cleanCode },
   })
-  if (!data?.packageByTrackingCode) return null
-  return toPackageItem(data.packageByTrackingCode, '')
+  return data?.publicTracking ?? null
 }
 
 /**

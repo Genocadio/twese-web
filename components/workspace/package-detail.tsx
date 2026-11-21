@@ -10,6 +10,7 @@ import {
   ExternalLink,
   KeyRound,
   MapPin,
+  MessageCircle,
   Package,
   Send,
   ShieldCheck,
@@ -32,6 +33,7 @@ import {
   TRANSFER_RULE_LABEL,
 } from '@/lib/status'
 import { formatTimestamp, timeAgo } from '@/lib/format'
+import { buildWhatsAppUrl } from '@/lib/share'
 import type { PackageItem } from '@/lib/types'
 import { cn } from '@/lib/utils'
 
@@ -96,6 +98,11 @@ export function PackageDetail({
     void navigator.clipboard.writeText(pkg.trackingCode)
     setCopiedCode(true)
     setTimeout(() => setCopiedCode(false), 2000)
+  }
+
+  function shareTrackingOnWhatsApp() {
+    if (!pkg.trackingCode) return
+    window.open(buildWhatsAppUrl(pkg.trackingCode), '_blank', 'noopener,noreferrer')
   }
 
   const content = (
@@ -170,6 +177,17 @@ export function PackageDetail({
               <Truck className="size-3.5" /> Transfer to driver
             </Button>
           )}
+
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={shareTrackingOnWhatsApp}
+            disabled={!pkg.trackingCode}
+            title="Share tracking link on WhatsApp"
+            className="gap-1.5 interactive-btn"
+          >
+            <MessageCircle className="size-3.5" /> Share Tracking
+          </Button>
 
           <button
             onClick={onClose}

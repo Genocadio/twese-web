@@ -80,4 +80,39 @@ export function statusLabel(status: string | null | undefined): string {
   }
 }
 
+/** Friendly label for the privacy-safe public tracking timeline. */
+export function trackingEventLabel(eventType: string | null | undefined): string {
+  if (!eventType) return 'Status updated'
+  switch (eventType) {
+    case 'CREATED':
+      return 'Package created'
+    case 'ACCEPTED':
+      return 'Accepted at origin'
+    case 'ASSIGNED':
+      return 'Driver assigned'
+    case 'PICKED_UP':
+      return 'Picked up'
+    case 'TRANSIT_STARTED':
+      return 'In transit'
+    case 'DELIVERY_INITIATED':
+      return 'Delivery in progress'
+    case 'ORIGIN_ARRIVED':
+      return 'Arrived at origin depot'
+    case 'DESTINATION_ARRIVED':
+      return 'Arrived at destination depot'
+    case 'READY_FOR_COLLECTION':
+      return 'Ready for collection'
+    case 'CUSTODY_TRANSFERRED':
+      return 'Handed over'
+    case 'DELIVERED':
+      return 'Delivered'
+    case 'COMPLETED':
+      return 'Completed'
+    case 'CANCELLED':
+      return 'Cancelled'
+    default:
+      return eventType.replace(/_/g, ' ').toLowerCase().replace(/^\w/, (c) => c.toUpperCase())
+  }
+}
+
 
