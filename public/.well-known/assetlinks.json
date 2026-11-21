@@ -1,0 +1,18 @@
+[
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls",
+      "delegate_permission/common.get_login_creds"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.gocavgo.twese",
+      "sha256_cert_fingerprints": [
+        "FC:04:ED:6F:D3:68:C6:CA:EE:AD:39:6C:31:45:B5:53:C3:33:95:BB:CA:EF:4E:DC:8D:75:81:E8:4C:1D:BC:F0",
+        "4E:85:6B:27:27:1A:C3:E2:41:BD:53:58:A8:6C:73:32:0C:1E:7C:A0:6F:AD:97:C1:81:A3:54:F7:FB:F5:E2:4F",
+        "9D:01:3B:B6:A8:C8:08:1D:B1:F5:D7:08:02:04:50:E4:53:C0:A6:0A:C8:E1:75:A5:D9:E2:BB:A3:9B:09:CC:BE",
+        "16:FD:C2:5F:3A:8C:A0:15:11:59:AE:88:AD:21:09:B6:A2:5D:A1:F4:52:42:8F:F8:2C:8B:18:4C:E2:DA:03:A5"
+      ]
+    }
+  }
+]
